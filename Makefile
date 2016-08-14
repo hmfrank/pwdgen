@@ -1,8 +1,8 @@
 CC      =gcc
 
-SRCDIR	=src
-OBJDIR	=build
-INCDIR	=inc
+SRCDIR  =src
+OBJDIR  =build
+INCDIR  =inc
 
 EXE     =pwdgen
 
@@ -27,21 +27,21 @@ debug:  $(EXE)
 $(OBJ): | $(OBJDIR)
 
 $(EXE): $(OBJ)
-        $(CC) -o $@ $^ $(LDFLAGS)
+		$(CC) -o $@ $^ $(LDFLAGS)
 
 -include $(DEP)
 
 %.d: %.c
-        $(CC) -MM ${INC} $*.c > $*.d
-        sed -i -e 's|.*:|$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$*).o:|' $*.d
+		$(CC) -MM ${INC} $*.c > $*.d
+		sed -i -e 's|.*:|$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$*).o:|' $*.d
 
 build/%.o: %.c
-        $(CC) -c $(CFLAGS) -o $@ $<
+		$(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
-        -rm $(EXE) $(OBJ) $(DEP)
-        -rm -f $(CLDEP)
-        -rm -r $(OBJDIR)
+		-rm $(EXE) $(OBJ) $(DEP)
+		-rm -f $(CLDEP)
+		-rm -r $(OBJDIR)
 
 $(OBJDIR):
-        jmkdir $@
+		mkdir $@
