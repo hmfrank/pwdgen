@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <ioCLI.h>
@@ -8,14 +6,9 @@
 
 int main()
 {
-    strcpy(account, "AccountTest");
-    strcpy(domain, "DomainTest");
-    strcpy(masterPwd, "pw");
-    version = 0;
-
+    askForInput();
     generatePwd();
-
-    printf("´%s\'\n", password);
+    showOutput();
 
     return 0;
 }

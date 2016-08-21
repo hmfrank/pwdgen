@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 char *bundleInput();
-bool validatePassword();
+bool validatePwd();
 void reinterpretPwd();
 void generatePwd();
 

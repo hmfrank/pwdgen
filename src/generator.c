@@ -1,8 +1,8 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <generator.h>
 #include <globals.h>
 
 /* Returns a string that consists of the bundled input */
@@ -15,9 +15,11 @@ char *bundleInput()
     strcpy(combination, account);
     sprintf(buffer, ".%u@", (unsigned) strlen(account));
     strcat(combination, buffer);
+
     strcat(combination, domain);
     sprintf(buffer, ".%u:", (unsigned) strlen(domain));
     strcat(combination, buffer);
+
     sprintf(buffer, "%u", version);
     strcat(combination, buffer);
 
@@ -25,7 +27,7 @@ char *bundleInput()
 }
 
 /* Returns `true' if a password is valid */
-bool validPassword()
+bool validatePwd()
 {
     int length = (int) strlen(password);
     bool containsUpperCase = false;
@@ -47,7 +49,7 @@ bool validPassword()
     return containsUpperCase && containsLowerCase;
 }
 
-/* Changes interpretation of bits in password */
+/* Changes the interpretation of bits in password */
 void reinterpretPwd()
 {
     /* TODO: Add functionality */
@@ -58,19 +60,18 @@ void reinterpretPwd()
 void generatePwd()
 {
     char input[256] = {0};
-    /* TODO: Hash output of `bundleInput()' */
     strcpy(input, bundleInput());
-    /* TODO: Hash master password */
 
-#if 0
+    /* So loop condition fails, for testing purposes */
+    strcat(input, "Aa");
+
     do
     {
+        strcpy(password, input);
         /* TODO: Hash input to password */
         /* TODO: Use generated digest as new input */
     }
     while (!validatePwd());
-#endif
 
-    strcpy(password, input);
     reinterpretPwd();
 }
