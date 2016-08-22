@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 void askForInput()
 {
     char buffer[256];
+    long lBuffer;
 
     printf("== Deterministic Password Generator (V3) ==\n"
         "Please enter the following:\n");
@@ -35,12 +37,16 @@ void askForInput()
     {
         printf("Version: ");
         fgets(buffer, 256, stdin);
+        lBuffer = strtol(buffer, NULL, 10);
     }
-    while (STRCMP(buffer, ==, "\n"));
+    while (STRCMP(buffer, ==, "\n") ||
+        strspn(buffer, "0123456789") < strlen(buffer) - 1 ||
+        lBuffer > UINT_MAX);
 
-    version = (unsigned) atoi(buffer);
+    version = (unsigned) lBuffer;
 }
 
+/* Shows the user the generated password */
 void showOutput()
 {
     printf("\'%s\'\n", password);

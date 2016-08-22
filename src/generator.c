@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,11 +6,15 @@
 #include <generator.h>
 #include <globals.h>
 
+static char *bundleInput();
+static bool validatePwd();
+static void reinterpretPwd();
+
 /* Returns a string that consists of the bundled input */
 /* Shape: account.len@domain.len:version */
-char *bundleInput()
+static char *bundleInput()
 {
-    char *combination = calloc(832, sizeof (char));
+    char *combination = calloc(256 * 3 + 64, sizeof (char));
     char *buffer = calloc(64, sizeof (char));
 
     strcpy(combination, account);
@@ -27,7 +32,7 @@ char *bundleInput()
 }
 
 /* Returns `true' if a password is valid */
-bool validatePwd()
+static bool validatePwd()
 {
     int length = (int) strlen(password);
     bool containsUpperCase = false;
@@ -50,7 +55,7 @@ bool validatePwd()
 }
 
 /* Changes the interpretation of bits in password */
-void reinterpretPwd()
+static void reinterpretPwd()
 {
     /* TODO: Add functionality */
     strcat(password, "nop");
