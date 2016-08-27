@@ -14,31 +14,30 @@ static void reinterpretPwd();
 /* Shape: account.len@domain.len:version */
 static char *bundleInput()
 {
-    char *combination = calloc(256 * 3 + 64, sizeof (char));
-    char *buffer = calloc(64, sizeof (char));
+    char *combination = calloc(255 * 2 + 10 + 31 + 1, sizeof (char));
+    char buffer[5] = {0};
 
-    strcpy(combination, account);
+    strncpy(combination, account, 255);
     sprintf(buffer, ".%u@", (unsigned) strlen(account));
-    strcat(combination, buffer);
+    strncat(combination, buffer, 5);
+    memset(buffer, 0, 5);
 
-    strcat(combination, domain);
+    strncat(combination, domain, 255);
     sprintf(buffer, ".%u:", (unsigned) strlen(domain));
-    strcat(combination, buffer);
+    strncat(combination, buffer, 5);
 
-    sprintf(buffer, "%u", version);
-    strcat(combination, buffer);
-
+    strncat(combination, version, 31);
     return combination;
 }
 
 /* Returns `true' if a password is valid */
 static bool validatePwd()
 {
-    int length = (int) strlen(password);
+    unsigned length = (unsigned) strlen(password);
     bool containsUpperCase = false;
     bool containsLowerCase = false;
 
-    for (int i = 0; i < length; i++)
+    for (unsigned i = 0; i < length; i++)
     {
         if (65 <= password[i] && password[i] <= 90)
         {
@@ -58,25 +57,36 @@ static bool validatePwd()
 static void reinterpretPwd()
 {
     /* TODO: Add functionality */
-    strcat(password, "nop");
+    printf("nop\n");
 }
 
 /* Returns a password, generated from the input */
 void generatePwd()
 {
-    char input[256] = {0};
-    strcpy(input, bundleInput());
+    char *input = bundleInput();
+    printf("Input:\n%s\n", input);
 
-    /* So loop condition fails, for testing purposes */
-    strcat(input, "Aa");
+    /* Just for testing, not final in any way */
+    strncpy(password, input, 255);
 
+    if (validatePwd())
+    {
+        printf("Password is valid.\n");
+    }
+    else
+    {
+        printf("Password is invalid.\n");
+    }
+
+#if 0
     do
     {
-        strcpy(password, input);
         /* TODO: Hash input to password */
         /* TODO: Use generated digest as new input */
     }
     while (!validatePwd());
+#endif
 
     reinterpretPwd();
+    free(input);
 }
