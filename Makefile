@@ -13,7 +13,7 @@ OBJ     =$(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 INC     =-I./$(INCDIR)/
 
 CFLAGS  =-std=c99 ${INC} -Wall -Wextra -Wpedantic -Werror -g
-LDFLAGS =
+LDFLAGS =-lcrypto -lm -lscrypt
 
 VPATH   =$(SRCDIR)
 
