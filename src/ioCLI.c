@@ -13,7 +13,7 @@ static void flush();
 /* Asks the user for the generation parameters */
 void askForInput()
 {
-    char buffer[257] = {0};
+    char buffer[258] = {0};
     size_t index;
 
     printf("== Deterministic Password Generator (V3) ==\n"
@@ -22,7 +22,7 @@ void askForInput()
     do
     {
         printf("Account: ");
-        fgets(buffer, 257, stdin);
+        fgets(buffer, 258, stdin);
         index = strcspn(buffer, "\n");
 
         /* Remove trailing '\n' */
@@ -32,21 +32,21 @@ void askForInput()
         }
 
         /* Stdin is not empty */
-        if (buffer[255] != 0)
+        if (buffer[256] != 0)
         {
             flush();
-            buffer[255] = 0;
+            buffer[256] = 0;
         }
     }
     while (strlen(buffer) == 0);
 
-    strncpy(account, buffer, 256);
-    memset(buffer, 0, 257);
+    strncpy(account, buffer, 257);
+    memset(buffer, 0, 258);
 
     do
     {
         printf("Domain: ");
-        fgets(buffer, 257, stdin);
+        fgets(buffer, 258, stdin);
         index = strcspn(buffer, "\n");
 
         if (index < strlen(buffer))
@@ -54,21 +54,21 @@ void askForInput()
             buffer[strcspn(buffer, "\n")] = 0;
         }
 
-        if (buffer[255] != 0)
+        if (buffer[256] != 0)
         {
             flush();
-            buffer[255] = 0;
+            buffer[256] = 0;
         }
     }
     while (strlen(buffer) == 0);
 
-    strncpy(domain, buffer, 256);
-    memset(buffer, 0, 257);
+    strncpy(domain, buffer, 257);
+    memset(buffer, 0, 258);
 
     do
     {
         printf("Version: ");
-        fgets(buffer, 33, stdin);
+        fgets(buffer, 18, stdin);
         index = strcspn(buffer, "\n");
 
         if (index < strlen(buffer))
@@ -76,16 +76,17 @@ void askForInput()
             buffer[strcspn(buffer, "\n")] = 0;
         }
 
-        if (buffer[31] != 0)
+        if (buffer[16] != 0)
         {
             flush();
-            buffer[31] = 0;
+            buffer[16] = 0;
         }
     }
     while (strlen(buffer) == 0 ||
         strspn(buffer, "0123456789") < strlen(buffer) - 1);
 
-    strncpy(version, buffer, 32);
+    strncpy(version, buffer, 17);
+    memset(buffer, 0, 18);
 }
 
 /* Empties stdin up to the next newline */
@@ -103,5 +104,5 @@ static void flush()
 /* Shows the user the generated password */
 void showOutput()
 {
-    printf("\'%s\'\n", password);
+    printf("Password: `%s\'\n", password);
 }
