@@ -6,9 +6,11 @@
 
 int main()
 {
+    initParams();
     askForInput();
     generatePwd();
     showOutput();
+    eraseParams();
 
     return 0;
 }

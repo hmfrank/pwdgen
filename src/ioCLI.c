@@ -37,11 +37,10 @@ void askForInput()
             flush();
             buffer[255] = 0;
         }
-
-        strncpy(account, buffer, 256);
     }
-    while (strlen(account) == 0);
+    while (strlen(buffer) == 0);
 
+    strncpy(account, buffer, 256);
     memset(buffer, 0, 257);
 
     do
@@ -60,11 +59,10 @@ void askForInput()
             flush();
             buffer[255] = 0;
         }
-
-        strncpy(domain, buffer, 256);
     }
-    while (strlen(domain) == 0);
+    while (strlen(buffer) == 0);
 
+    strncpy(domain, buffer, 256);
     memset(buffer, 0, 257);
 
     do
@@ -83,11 +81,11 @@ void askForInput()
             flush();
             buffer[31] = 0;
         }
-
-        strncpy(version, buffer, 32);
     }
-    while (strlen(version) == 0 ||
+    while (strlen(buffer) == 0 ||
         strspn(buffer, "0123456789") < strlen(buffer) - 1);
+
+    strncpy(version, buffer, 32);
 }
 
 /* Empties stdin up to the next newline */

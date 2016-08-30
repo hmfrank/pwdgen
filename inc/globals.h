@@ -1,10 +1,16 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-extern char masterPwd[256];
-extern char account[256];
-extern char domain[256];
-extern char version[32];
-extern char password[256];
+#define initParams() pwdgenInitParams()
+#define eraseParams() pwdgenEraseParams()
+
+extern char *masterPwd;
+extern char *account;
+extern char *domain;
+extern char *version;
+extern char *password;
+
+void initParams();
+void eraseParams();
 
 #endif
