@@ -9,6 +9,7 @@ char *account;
 char *domain;
 char *version;
 char *password;
+unsigned pwdLen = 0;
 
 /* Allocates the parameters and zeroises them */
 void initParams()

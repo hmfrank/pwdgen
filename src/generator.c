@@ -16,7 +16,9 @@
 
 static char *bundleInput();
 static bool validatePwd();
-static void hashSHA256(char const *input, size_t inputLen, uint8_t *output, size_t outputLen);
+static void charToUint8_t(uint8_t *output, char const *input, size_t len);
+static void hashSHA256(uint8_t *output, size_t outputLen, uint8_t const *input, size_t inputLen);
+static void encodeBase64(char *output, size_t outputLen, uint8_t const *input, size_t inputLen);
 static void reinterpretPwd();
 
 /* Returns a string that consists of the bundled input */
@@ -63,8 +65,21 @@ static bool validatePwd()
     return containsUpperCase && containsLowerCase;
 }
 
-/* Hashes the input with SHA256 and converts the result to uint8_t */
-static void hashSHA256(char const *input, size_t inputLen, uint8_t *output, size_t outputLen)
+/* Converts a char array to a uint8_t array */
+static void charToUint8_t(uint8_t *output, char const *input, size_t len)
+{
+    /* Sanity check */
+    assert(input != NULL && output != NULL);
+
+    for (size_t i = 0; i < len; i++)
+    {
+        assert(input[i] >= 0);
+        output[i] = (uint8_t) input[i];
+    }
+}
+
+/* Hashes a uint8_t string with SHA256 and returns the digest as a uint8_t string */
+static void hashSHA256(uint8_t *output, size_t outputLen, uint8_t const *input, size_t inputLen)
 {
     unsigned char inBuffer[inputLen];
     unsigned char outBuffer[32];
@@ -72,15 +87,13 @@ static void hashSHA256(char const *input, size_t inputLen, uint8_t *output, size
     SHA256_CTX sha256;
 
     /* Sanity check */
-    assert(input != NULL);
-    assert(output != NULL);
+    assert(input != NULL && output != NULL);
     assert(outputLen >= 32);
     /* TODO: Add support for char type that is not 8 bits long */
     assert(SHA256_DIGEST_LENGTH == 32);
 
     for (i = 0; i < inputLen; i++)
     {
-        assert(input[i] >= 0);
         inBuffer[i] = (unsigned char) input[i];
     }
 
@@ -94,57 +107,76 @@ static void hashSHA256(char const *input, size_t inputLen, uint8_t *output, size
     }
 }
 
+/* Converts a uint8_t string to the corresponding base 64 char string */
+static void encodeBase64(char *output, size_t outputLen, uint8_t const *input, size_t inputLen)
+{
+    char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    /* Sanity check */
+    assert(input != NULL && output != NULL);
+    assert(outputLen >= inputLen / 3 * 4 + 1);
+    /* Function does not support padding */
+    assert(inputLen % 3 == 0);
+
+    for (size_t i = 0; i < inputLen; i += 3)
+    {
+        output[i] = b64[(size_t) input[i] >> 2];
+        output[i + 1] = b64[(size_t) ((input[i] & 0x3) << 4) + (input[i + 1] >> 4)];
+        output[i + 2] = b64[(size_t) ((input[i + 1] & 0xF) << 2) + (input[i + 2] >> 6)];
+        output[i + 3] = b64[(size_t) input[i + 2] & 0x3F];
+    }
+
+    output[outputLen - 1] = 0;
+}
+
 /* Generates a password and stores it in the global variable `password' */
 /* TODO: Add more detailed description */
 void generatePwd()
 {
-    char *input = bundleInput();
+    char *buffer = bundleInput();
+    uint8_t uint8MPwd[256] = {0};
+    uint8_t uint8Input[256 * 2 + 10 + 16] = {0};
     uint8_t hashedMPwd[32];
     uint8_t hashedInput[32];
-    uint8_t digest[32];
-    uint64_t cost = pow(2, 17);
+    uint8_t digest[194];
 
-    printf("Input:\n`%s\'\n", input);
+    charToUint8_t(uint8MPwd, masterPwd, strlen(masterPwd));
+    charToUint8_t(uint8Input, buffer, strlen(buffer));
+    hashSHA256(hashedMPwd, 32, uint8MPwd, strlen(masterPwd));
+    hashSHA256(hashedInput, 32, uint8Input, strlen(buffer));
 
-    hashSHA256(masterPwd, strlen(masterPwd), hashedMPwd, 32);
-    hashSHA256(input, strlen(input), hashedInput, 32);
-
-    /* Just for testing, not final in any way */
-    strncpy(password, input, 256);
-
-    if (validatePwd())
-    {
-        printf("Password is valid.\n");
-    }
-    else
-    {
-        printf("Password is invalid. Enjoy your infinite loop.\n");
-    }
+    printf("Input: `%s\'\n\n", buffer);
 
     do
     {
         /* password, len, salt, len, cost, block size, parallelisation, digest, len */
         /* TODO: Test for errors */
-        libscrypt_scrypt(hashedMPwd, 32, hashedInput, 32, cost, 8, 1, digest, 32);
-        /* TODO: Convert digest to base 64 */
-        /* TODO: Use generated digest as new input */
-    }
-    while (!validatePwd());
+        libscrypt_scrypt(hashedMPwd, 32, hashedInput, 32, pow(2, 17), 8, 1, digest, 194);
+        encodeBase64(buffer, 192 / 3 * 4 + 1, digest, 192);
+        strncpy(password, buffer, pwdLen - 2);
 
-    printf("Scrypt digest: ");
-    for (size_t i = 0; i < 32; i++)
-    {
-        printf("%u : ", (unsigned) digest[i]);
+        if (validatePwd())
+        {
+            printf("`%s\' <Okay>\n\n", password);
+            break;
+        }
+        else
+        {
+            printf("`%s\' <Bad password>\n", password);
+            hashSHA256(hashedInput, 32, digest, 192);
+            continue;
+        }
     }
-    printf("\b\b  \n");
+    while (1);
 
     reinterpretPwd();
-    free(input);
+    free(buffer);
 }
 
 /* Changes the interpretation of bits in password */
+/* TODO: Move to different file */
 static void reinterpretPwd()
 {
     /* TODO: Add functionality */
-    printf("nop\n");
+    printf("[TODO] Reinterpretation: + 1 special char + 1 number [0-8]\n");
 }

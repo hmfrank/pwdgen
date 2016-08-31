@@ -9,6 +9,7 @@ extern char *account;
 extern char *domain;
 extern char *version;
 extern char *password;
+extern unsigned pwdLen;
 
 void initParams();
 void eraseParams();
