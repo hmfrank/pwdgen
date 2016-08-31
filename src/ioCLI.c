@@ -21,7 +21,7 @@ void askForInput()
 
     do
     {
-        printf("Account /.{256}/:                ");
+        printf("Account /.{256}/:           ");
         fgets(buffer, 258, stdin);
         index = strcspn(buffer, "\n");
 
@@ -32,8 +32,7 @@ void askForInput()
         }
 
         /* Stdin is not empty */
-        if (buffer[256] != 0)
-        {
+        if (buffer[256] != 0) {
             flush();
             buffer[256] = 0;
         }
@@ -45,7 +44,7 @@ void askForInput()
 
     do
     {
-        printf("Domain  /.{256}/:                ");
+        printf("Domain  /.{256}/:           ");
         fgets(buffer, 258, stdin);
         index = strcspn(buffer, "\n");
 
@@ -67,7 +66,7 @@ void askForInput()
 
     do
     {
-        printf("Version /[1-9][0-9]{0,15}/:      ");
+        printf("Version /[1-9][0-9]{0,15}/: ");
         fgets(buffer, 18, stdin);
         index = strcspn(buffer, "\n");
 
@@ -90,8 +89,14 @@ void askForInput()
 
     do
     {
-        printf("Length  /[1-9][0-9]{0,2}|[4-9]/: ");
+        printf("Length  (4..256):           ");
         fgets(buffer, 5, stdin);
+        index = strcspn(buffer, "\n");
+
+        if (index < strlen(buffer))
+        {
+            buffer[index] = 0;
+        }
 
         if (buffer[3] != 0)
         {
@@ -101,7 +106,7 @@ void askForInput()
 
         pwdLen = (unsigned) strtoul(buffer, NULL, 10);
     }
-    while (pwdLen < 4 || pwdLen > 255);
+    while (pwdLen < 4 || pwdLen > 256);
 
     memset(buffer, 0, 257);
 }

@@ -110,7 +110,9 @@ static void hashSHA256(uint8_t *output, size_t outputLen, uint8_t const *input, 
 /* Converts a uint8_t string to the corresponding base 64 char string */
 static void encodeBase64(char *output, size_t outputLen, uint8_t const *input, size_t inputLen)
 {
+    /* FIXME: Base 64 output seems to be faulty */
     char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    size_t i, j;
 
     /* Sanity check */
     assert(input != NULL && output != NULL);
@@ -118,12 +120,12 @@ static void encodeBase64(char *output, size_t outputLen, uint8_t const *input, s
     /* Function does not support padding */
     assert(inputLen % 3 == 0);
 
-    for (size_t i = 0; i < inputLen; i += 3)
+    for (i = 0, j = 0; i < inputLen; i += 3, j += 4)
     {
-        output[i] = b64[(size_t) input[i] >> 2];
-        output[i + 1] = b64[(size_t) ((input[i] & 0x3) << 4) + (input[i + 1] >> 4)];
-        output[i + 2] = b64[(size_t) ((input[i + 1] & 0xF) << 2) + (input[i + 2] >> 6)];
-        output[i + 3] = b64[(size_t) input[i + 2] & 0x3F];
+        output[j] = b64[(size_t) input[i] >> 2];
+        output[j + 1] = b64[(size_t) ((input[i] & 0x3) << 4) + (input[i + 1] >> 4)];
+        output[j + 2] = b64[(size_t) ((input[i + 1] & 0xF) << 2) + (input[i + 2] >> 6)];
+        output[j + 3] = b64[(size_t) input[i + 2] & 0x3F];
     }
 
     output[outputLen - 1] = 0;
@@ -136,9 +138,12 @@ void generatePwd()
     char *buffer = bundleInput();
     uint8_t uint8MPwd[256] = {0};
     uint8_t uint8Input[256 * 2 + 10 + 16] = {0};
-    uint8_t hashedMPwd[32];
-    uint8_t hashedInput[32];
-    uint8_t digest[194];
+    uint8_t hashedMPwd[32] = {0};
+    uint8_t hashedInput[32] = {0};
+    uint8_t digest[194] = {0};
+
+    /* Program will end up in infinite loop otherwise */
+    assert(pwdLen >= 4);
 
     charToUint8_t(uint8MPwd, masterPwd, strlen(masterPwd));
     charToUint8_t(uint8Input, buffer, strlen(buffer));
@@ -163,7 +168,7 @@ void generatePwd()
         else
         {
             printf("`%s\' <Bad password>\n", password);
-            hashSHA256(hashedInput, 32, digest, 192);
+            hashSHA256(hashedInput, 32, digest, 194);
             continue;
         }
     }
