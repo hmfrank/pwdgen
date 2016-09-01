@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,101 +15,118 @@ static void flush();
 void askForInput()
 {
     char buffer[258] = {0};
-    size_t index;
+    union { size_t index; bool reloop; long lBuff; } u;
 
     printf("== Deterministic Password Generator (V3) ==\n"
         "Please enter the following:\n");
 
     do
     {
+        memset(buffer, 0, 258);
         printf("Account /.{256}/:           ");
         fgets(buffer, 258, stdin);
-        index = strcspn(buffer, "\n");
+        u.index = strcspn(buffer, "\n");
 
         /* Remove trailing '\n' */
-        if (index < strlen(buffer))
+        if (u.index < strlen(buffer))
         {
-            buffer[index] = 0;
+            buffer[u.index] = 0;
         }
 
         /* Stdin is not empty */
         if (buffer[256] != 0) {
             flush();
-            buffer[256] = 0;
+            u.reloop = true;
+        }
+        else
+        {
+            u.reloop = false;
         }
     }
-    while (strlen(buffer) == 0);
+    while (strlen(buffer) == 0 || u.reloop);
 
     strncpy(account, buffer, 257);
-    memset(buffer, 0, 258);
 
     do
     {
+        memset(buffer, 0, 258);
         printf("Domain  /.{256}/:           ");
         fgets(buffer, 258, stdin);
-        index = strcspn(buffer, "\n");
+        u.index = strcspn(buffer, "\n");
 
-        if (index < strlen(buffer))
+        if (u.index < strlen(buffer))
         {
-            buffer[index] = 0;
+            buffer[u.index] = 0;
         }
 
         if (buffer[256] != 0)
         {
             flush();
-            buffer[256] = 0;
+            u.reloop = true;
+        }
+        else
+        {
+            u.reloop = false;
         }
     }
-    while (strlen(buffer) == 0);
+    while (strlen(buffer) == 0 || u.reloop);
 
     strncpy(domain, buffer, 257);
-    memset(buffer, 0, 258);
 
     do
     {
+        memset(buffer, 0, 258);
         printf("Version /[1-9][0-9]{0,15}/: ");
         fgets(buffer, 18, stdin);
-        index = strcspn(buffer, "\n");
+        u.index = strcspn(buffer, "\n");
 
-        if (index < strlen(buffer))
+        if (u.index < strlen(buffer))
         {
-            buffer[index] = 0;
+            buffer[u.index] = 0;
         }
 
         if (buffer[16] != 0)
         {
             flush();
-            buffer[16] = 0;
+            u.reloop = true;
+        }
+        else
+        {
+            u.reloop = false;
         }
     }
-    while (strlen(buffer) == 0 ||
+    while (strlen(buffer) == 0 || buffer[0] == '0' || u.reloop ||
         strspn(buffer, "0123456789") < strlen(buffer));
 
     strncpy(version, buffer, 17);
-    memset(buffer, 0, 257);
 
     do
     {
+        memset(buffer, 0, 258);
         printf("Length  (4..256):           ");
         fgets(buffer, 5, stdin);
-        index = strcspn(buffer, "\n");
+        u.index = strcspn(buffer, "\n");
 
-        if (index < strlen(buffer))
+        if (u.index < strlen(buffer))
         {
-            buffer[index] = 0;
+            buffer[u.index] = 0;
         }
 
         if (buffer[3] != 0)
         {
             flush();
-            buffer[3] = 0;
+            u.lBuff = 0;
+        }
+        else
+        {
+            u.lBuff = strtol(buffer, NULL, 10);
         }
 
-        pwdLen = (unsigned) strtoul(buffer, NULL, 10);
     }
-    while (pwdLen < 4 || pwdLen > 256);
+    while (u.lBuff < 4 || u.lBuff > 256);
 
-    memset(buffer, 0, 257);
+    pwdLen = (unsigned) u.lBuff;
+    memset(buffer, 0, 258);
 }
 
 /* Empties stdin up to the next newline */
