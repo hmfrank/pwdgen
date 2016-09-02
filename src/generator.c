@@ -11,15 +11,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <interpreter.h>
 #include <generator.h>
 #include <globals.h>
 
 static char *bundleInput();
-static bool validatePwd();
+static bool validatePwd(char *password);
 static void charToUint8_t(uint8_t *output, char const *input, size_t len);
 static void hashSHA256(uint8_t *output, size_t outputLen, uint8_t const *input, size_t inputLen);
 static void encodeBase64(char *output, size_t outputLen, uint8_t const *input, size_t inputLen);
-static void reinterpretPwd();
 
 /* Returns a string that consists of the bundled input */
 /* Shape: account.len@domain.len:version */
@@ -39,11 +39,12 @@ static char *bundleInput()
     strncat(combination, buffer, 5);
 
     strncat(combination, version, 16);
+    memset(buffer, 0, 5);
     return combination;
 }
 
 /* Returns `true' if a password is valid */
-static bool validatePwd()
+static bool validatePwd(char *password)
 {
     size_t length = strlen(password);
     bool containsUpperCase = false;
@@ -110,7 +111,6 @@ static void hashSHA256(uint8_t *output, size_t outputLen, uint8_t const *input, 
 /* Converts a uint8_t string to the corresponding base 64 char string */
 static void encodeBase64(char *output, size_t outputLen, uint8_t const *input, size_t inputLen)
 {
-    /* FIXME: Base 64 output seems to be faulty */
     char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     size_t i, j;
 
@@ -160,28 +160,28 @@ void generatePwd()
         encodeBase64(buffer, 192 / 3 * 4 + 1, digest, 192);
         strncpy(password, buffer, pwdLen - 2);
 
-        if (validatePwd())
+        if (validatePwd(password))
         {
-            printf("`%s\' <Okay>\n\n", password);
+            printf("Scrypt: `%s\' <Okay>\n\n", password);
             break;
         }
         else
         {
-            printf("`%s\' <Bad password>\n", password);
+            printf("Scrypt: `%s\' <Bad password>\n", password);
             hashSHA256(hashedInput, 32, digest, 194);
             continue;
         }
     }
     while (1);
 
-    reinterpretPwd();
-    free(buffer);
-}
+    interpretLastBits(digest);
 
-/* Changes the interpretation of bits in password */
-/* TODO: Move to different file */
-static void reinterpretPwd()
-{
-    /* TODO: Add functionality */
-    printf("[TODO] Reinterpretation: + 1 special char + 1 number [0-8]\n");
+    /* Erase confidential data */
+    memset(buffer, 0, strlen(buffer));
+    memset(uint8MPwd, 0, 256);
+    memset(uint8Input, 0, 256 * 2 + 10 + 16);
+    memset(hashedMPwd, 0, 32);
+    memset(hashedInput, 0, 32);
+    memset(digest, 0, 194);
+    free(buffer);
 }

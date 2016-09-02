@@ -103,7 +103,7 @@ void askForInput()
     do
     {
         memset(buffer, 0, 258);
-        printf("Length  (4..256):           ");
+        printf("Length  (10..256):          ");
         fgets(buffer, 5, stdin);
         u.index = strcspn(buffer, "\n");
 
@@ -123,10 +123,11 @@ void askForInput()
         }
 
     }
-    while (u.lBuff < 4 || u.lBuff > 256);
+    while (u.lBuff < 10 || u.lBuff > 256);
 
     pwdLen = (unsigned) u.lBuff;
     memset(buffer, 0, 258);
+    u.index = 0;
 }
 
 /* Empties stdin up to the next newline */
