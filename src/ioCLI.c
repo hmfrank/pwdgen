@@ -145,5 +145,5 @@ static void flush()
 /* Shows the user the generated password */
 void showOutput()
 {
-    printf("Password: `%s\'\n", password);
+    printf("\nPassword: `%s\'\n", password);
 }

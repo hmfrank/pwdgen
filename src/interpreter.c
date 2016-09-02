@@ -36,8 +36,11 @@ void interpretLastBits(uint8_t *digest)
         password[pos + 1] = symbol;
     }
 
-    printf("Interpreter: symbol = %c, number = %c, pos = %d, symbolFst = %s\n",
-        symbol, number, pos, symbolFst ? "true" : "false");
+    if (debug)
+    {
+        printf("Interpreter: symbol = %c, number = %c, pos = %d, symbolFst = %s\n",
+            symbol, number, pos, symbolFst ? "true" : "false");
+    }
 
     /* Erase confidential data */
     symbol = number = 0;

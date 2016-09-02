@@ -150,7 +150,10 @@ void generatePwd()
     hashSHA256(hashedMPwd, 32, uint8MPwd, strlen(masterPwd));
     hashSHA256(hashedInput, 32, uint8Input, strlen(buffer));
 
-    printf("Input: `%s\'\n\n", buffer);
+    if (debug)
+    {
+        printf("\nInput: `%s\'\n", buffer);
+    }
 
     do
     {
@@ -162,12 +165,20 @@ void generatePwd()
 
         if (validatePwd(password))
         {
-            printf("Scrypt: `%s\' <Okay>\n\n", password);
+            if (debug)
+            {
+                printf("Scrypt: `%s\' <Okay>\n", password);
+            }
+
             break;
         }
         else
         {
-            printf("Scrypt: `%s\' <Bad password>\n", password);
+            if (debug)
+            {
+                printf("Scrypt: `%s\' <Bad password>\n", password);
+            }
+
             hashSHA256(hashedInput, 32, digest, 194);
             continue;
         }

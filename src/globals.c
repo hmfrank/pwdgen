@@ -9,7 +9,8 @@ char *account;
 char *domain;
 char *version;
 char *password;
-unsigned pwdLen = 0;
+unsigned pwdLen;
+bool debug;
 
 /* Allocates the parameters and zeroises them */
 void initParams()
@@ -22,6 +23,9 @@ void initParams()
 
     assert(masterPwd != NULL && account != NULL && domain != NULL &&
         version != NULL && password != NULL);
+
+    pwdLen = 0;
+    debug = false;
 }
 
 /* Zeroises and deallocates the parameters */
@@ -38,4 +42,6 @@ void eraseParams()
     free(domain);
     free(version);
     free(password);
+
+    pwdLen = 0;
 }
