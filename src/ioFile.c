@@ -96,5 +96,5 @@ static void appendAccount()
     fprintf(file, "%s %s %s %s %u\n", newHash, account, domain, version, pwdLen);
     printf("\nAdded new account to your list.\n");
     fclose(file);
-    memset(newHash, 0, 65);
+    memset(newHash, 0, 65 * sizeof(char));
 }

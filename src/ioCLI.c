@@ -19,7 +19,7 @@ void askForInput()
 
     do
     {
-        memset(buffer, 0, 258);
+        memset(buffer, 0, 258 * sizeof (char));
         printf("Account /.{256}/:           ");
         fgets(buffer, 258, stdin);
         u.index = strcspn(buffer, "\n");
@@ -46,7 +46,7 @@ void askForInput()
 
     do
     {
-        memset(buffer, 0, 258);
+        memset(buffer, 0, 258 * sizeof (char));
         printf("Domain  /.{256}/:           ");
         fgets(buffer, 258, stdin);
         u.index = strcspn(buffer, "\n");
@@ -72,7 +72,7 @@ void askForInput()
 
     do
     {
-        memset(buffer, 0, 258);
+        memset(buffer, 0, 258 * sizeof (char));
         printf("Version /[1-9][0-9]{0,15}/: ");
         fgets(buffer, 18, stdin);
         u.index = strcspn(buffer, "\n");
@@ -99,7 +99,7 @@ void askForInput()
 
     do
     {
-        memset(buffer, 0, 258);
+        memset(buffer, 0, 258 * sizeof (char));
         printf("Length  (10..256):          ");
         fgets(buffer, 5, stdin);
         u.index = strcspn(buffer, "\n");
@@ -123,7 +123,7 @@ void askForInput()
     while (u.lBuff < 10 || u.lBuff > 256);
 
     pwdLen = (unsigned) u.lBuff;
-    memset(buffer, 0, 258);
+    memset(buffer, 0, 258 * sizeof (char));
     u.index = 0;
 }
 

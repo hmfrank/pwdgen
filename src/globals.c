@@ -31,11 +31,11 @@ void initParams()
 /* Zeroises and deallocates the parameters */
 void eraseParams()
 {
-    memset(masterPwd, 0, 257);
-    memset(account, 0, 257);
-    memset(domain, 0, 257);
-    memset(version, 0, 17);
-    memset(password, 0, 257);
+    memset(masterPwd, 0, 257 * sizeof (char));
+    memset(account, 0, 257 * sizeof (char));
+    memset(domain, 0, 257 * sizeof (char));
+    memset(version, 0, 17 * sizeof (char));
+    memset(password, 0, 257 * sizeof (char));
 
     free(masterPwd);
     free(account);

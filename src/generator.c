@@ -30,14 +30,14 @@ void bundleInput(char *output, size_t outputLen)
     strncpy(output, account, 256);
     sprintf(buffer, ".%u@", (unsigned) strlen(account));
     strncat(output, buffer, 5);
-    memset(buffer, 0, 5);
+    memset(buffer, 0, 5 * sizeof (char));
 
     strncat(output, domain, 256);
     sprintf(buffer, ".%u:", (unsigned) strlen(domain));
     strncat(output, buffer, 5);
 
     strncat(output, version, 16);
-    memset(buffer, 0, 5);
+    memset(buffer, 0, 5 * sizeof (char));
 }
 
 /* Returns `true' if a password is valid */
