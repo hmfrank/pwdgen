@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +12,7 @@ void interpretLastBits(uint8_t *digest)
     char symbol = specialChars[digest[192] >> 3];
     char number = ((unsigned) (digest[192] & 0x7)) + '0';
     int pos = (unsigned) (digest[193] >> 5);
-    bool symbolFst = (bool) ((digest[193] >> 4) & 0x1);
+    int symbolFst = (int) ((digest[193] >> 4) & 0x1);
 
     for (int i = 253; i >= pos; i--)
     {
@@ -44,6 +43,5 @@ void interpretLastBits(uint8_t *digest)
 
     /* Erase confidential data */
     symbol = number = 0;
-    pos = 0;
-    symbolFst = false;
+    pos = symbolFst = 0;
 }

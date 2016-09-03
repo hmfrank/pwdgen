@@ -1,5 +1,4 @@
 #include <limits.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,15 +6,13 @@
 #include <globals.h>
 #include <ioCLI.h>
 
-#define STRCMP(a, R, b) (strcmp(a, b) R 0)
-
 static void flush();
 
 /* Asks the user for the generation parameters */
 void askForInput()
 {
     char buffer[258] = {0};
-    union { size_t index; bool reloop; long lBuff; } u;
+    union { size_t index; int reloop; long lBuff; } u;
 
     printf("== Deterministic Password Generator (V3) ==\n"
         "Please enter the following:\n");
@@ -36,11 +33,11 @@ void askForInput()
         /* Stdin is not empty */
         if (buffer[256] != 0) {
             flush();
-            u.reloop = true;
+            u.reloop = 1;
         }
         else
         {
-            u.reloop = false;
+            u.reloop = 0;
         }
     }
     while (strlen(buffer) == 0 || u.reloop);
@@ -62,11 +59,11 @@ void askForInput()
         if (buffer[256] != 0)
         {
             flush();
-            u.reloop = true;
+            u.reloop = 1;
         }
         else
         {
-            u.reloop = false;
+            u.reloop = 0;
         }
     }
     while (strlen(buffer) == 0 || u.reloop);
@@ -88,11 +85,11 @@ void askForInput()
         if (buffer[16] != 0)
         {
             flush();
-            u.reloop = true;
+            u.reloop = 1;
         }
         else
         {
-            u.reloop = false;
+            u.reloop = 0;
         }
     }
     while (strlen(buffer) == 0 || buffer[0] == '0' || u.reloop ||

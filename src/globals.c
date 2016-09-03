@@ -10,7 +10,7 @@ char *domain;
 char *version;
 char *password;
 unsigned pwdLen;
-bool debug;
+int debug;
 
 /* Allocates the parameters and zeroises them */
 void initParams()
@@ -25,7 +25,7 @@ void initParams()
         version != NULL && password != NULL);
 
     pwdLen = 0;
-    debug = false;
+    debug = 0;
 }
 
 /* Zeroises and deallocates the parameters */

@@ -5,7 +5,6 @@
 #include <libscrypt.h>
 #include <math.h>
 #include <openssl/sha.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +15,7 @@
 #include <hashTools.h>
 #include <interpreter.h>
 
-static bool validatePwd(char *password);
+static int validatePwd(char *password);
 
 /* Combines the input parameters and stores them in the output string */
 /* Shape: account.len@domain.len:version */
@@ -42,22 +41,22 @@ void bundleInput(char *output, size_t outputLen)
 }
 
 /* Returns `true' if a password is valid */
-static bool validatePwd(char *password)
+static int validatePwd(char *password)
 {
     size_t length = strlen(password);
-    bool containsUpperCase = false;
-    bool containsLowerCase = false;
+    int containsUpperCase = 0;
+    int containsLowerCase = 0;
 
     for (size_t i = 0; i < length; i++)
     {
         if (65 <= password[i] && password[i] <= 90)
         {
-            containsUpperCase = true;
+            containsUpperCase = 1;
         }
 
         if (97 <= password[i] && password[i] <= 122)
         {
-            containsLowerCase = true;
+            containsLowerCase = 1;
         }
     }
 
@@ -68,34 +67,45 @@ static bool validatePwd(char *password)
 /* TODO: Add more detailed description */
 void generatePwd()
 {
-    char buffer[256 * 2 + 10 + 16 + 1] = {0};
-    bundleInput(buffer, 256 * 2 + 10 + 16 + 1);
-    uint8_t uint8MPwd[256] = {0};
-    uint8_t uint8Input[256 * 2 + 10 + 16] = {0};
     uint8_t hashedMPwd[32] = {0};
     uint8_t hashedInput[32] = {0};
     uint8_t digest[194] = {0};
+    size_t lenInput = 0;
+
+    union
+    {
+        char inChar[MAX_INPUT_LEN];
+        uint8_t uint8Input[MAX_INPUT_LEN - 1];
+        uint8_t uint8MPwd[256];
+    } buff;
 
     /* Program will end up in infinite loop otherwise */
+    /* If this occurs, ioCLI has made a mistake */
     assert(pwdLen >= 4);
 
-    charToUint8_t(uint8MPwd, masterPwd, strlen(masterPwd));
-    charToUint8_t(uint8Input, buffer, strlen(buffer));
-    hashSHA256(hashedMPwd, 32, uint8MPwd, strlen(masterPwd));
-    hashSHA256(hashedInput, 32, uint8Input, strlen(buffer));
+    memset(buff.uint8MPwd, 0, 256);
+    charToUint8_t(buff.uint8MPwd, masterPwd, strlen(masterPwd));
+    hashSHA256(hashedMPwd, 32, buff.uint8MPwd, strlen(masterPwd));
+    memset(buff.inChar, 0, MAX_INPUT_LEN * sizeof (char));
+    bundleInput(buff.inChar, MAX_INPUT_LEN);
 
     if (debug)
     {
-        printf("\nInput: `%s\'\n", buffer);
+        printf("\nInput: `%s\'\n", buff.inChar);
     }
+
+    lenInput = strlen(buff.inChar);
+    charToUint8_t(buff.uint8Input, buff.inChar, lenInput);
+    hashSHA256(hashedInput, 32, buff.uint8Input, lenInput);
+
 
     do
     {
         /* password, len, salt, len, cost, block size, parallelisation, digest, len */
         /* TODO: Test for errors */
         libscrypt_scrypt(hashedMPwd, 32, hashedInput, 32, pow(2, 17), 8, 1, digest, 194);
-        encodeBase64(buffer, 192 / 3 * 4 + 1, digest, 192);
-        strncpy(password, buffer, pwdLen - 2);
+        encodeBase64(buff.inChar, 192 / 3 * 4 + 1, digest, 192);
+        strncpy(password, buff.inChar, pwdLen - 2);
 
         if (validatePwd(password))
         {
@@ -122,9 +132,7 @@ void generatePwd()
     interpretLastBits(digest);
 
     /* Erase confidential data */
-    memset(buffer, 0, 256 * 2 + 10 + 16 + 1);
-    memset(uint8MPwd, 0, 256);
-    memset(uint8Input, 0, 256 * 2 + 10 + 16);
+    memset(buff.inChar, 0, MAX_INPUT_LEN * sizeof (char));
     memset(hashedMPwd, 0, 32);
     memset(hashedInput, 0, 32);
     memset(digest, 0, 194);

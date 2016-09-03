@@ -45,17 +45,17 @@ void encodeBase64(char *output, size_t outputLen, uint8_t const *input, size_t i
 /* Converts a uint8_t string to the string of the corresponding hex chars */
 void uint8_tToHex(char *output, size_t outputLen, uint8_t const *input, size_t inputLen)
 {
-    char hexChars[] = "0123456789ABCDEF";
-    size_t i;
+    char hexChars[] = "0123456789abcdef";
+    size_t i, j;
 
     /* Sanity check */
     assert(input != NULL && output != NULL);
     assert(outputLen >= inputLen * 2 + 1);
 
-    for (i = 0; i < inputLen; i++)
+    for (i = 0, j = 0; i < inputLen; i += 1, j += 2)
     {
-        output[i] = hexChars[input[i] >> 4];
-        output[i + 1] = hexChars[input[i] & 0xF];
+        output[j] = hexChars[input[i] >> 4];
+        output[j + 1] = hexChars[input[i] & 0xF];
     }
 
     output[outputLen - 1] = 0;
