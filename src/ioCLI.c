@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ioCLI.h>
 #include <globals.h>
+#include <ioCLI.h>
 
 #define STRCMP(a, R, b) (strcmp(a, b) R 0)
 

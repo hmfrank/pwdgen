@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <interpreter.h>
 #include <globals.h>
+#include <interpreter.h>
 
 /* Interprets the last 12 bits of the digest and adjusts the password accordingly */
 void interpretLastBits(uint8_t *digest)
