@@ -5,8 +5,6 @@
 #include <ioCLI.h>
 #include <ioFile.h>
 
-#define STRCMP(a, R, b) (strcmp(a, b) R 0)
-
 int main(int argc, char *argv[])
 {
     initParams();

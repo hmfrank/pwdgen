@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,9 @@
 /* Interprets the last 12 bits of the digest and adjusts the password accordingly */
 void interpretLastBits(uint8_t *digest)
 {
+    /* Sanity check */
+    assert(digest != NULL);
+
     char specialChars[] = "!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~";
     char symbol = specialChars[digest[192] >> 3];
     char number = ((unsigned) (digest[192] & 0x7)) + '0';

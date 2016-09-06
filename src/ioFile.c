@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,10 +27,7 @@ void saveAccount()
 static void tryCreateFile(char const *path)
 {
     /* Sanity check */
-    if (path == NULL)
-    {
-        exit(EXIT_FAILURE);
-    }
+    assert(path != NULL);
 
     FILE *file = fopen(path, "a");
 
@@ -47,10 +45,7 @@ static void tryCreateFile(char const *path)
 static void bundleInputWithLen(char *output, size_t outputLen)
 {
     /* Sanity check */
-    if (output == NULL || outputLen < MAX_INPUT_LEN + 4)
-    {
-        exit(EXIT_FAILURE);
-    }
+    assert (output != NULL && outputLen >= MAX_INPUT_LEN + 4);
 
     bundleInput(output, MAX_INPUT_LEN);
     snprintf(output + strlen(output), 5, ":%u", pwdLen);
@@ -59,10 +54,7 @@ static void bundleInputWithLen(char *output, size_t outputLen)
 static void generateLineHash(char *hash, size_t hashLen)
 {
     /* Sanity check */
-    if (hash == NULL || hashLen < 65)
-    {
-        exit(EXIT_FAILURE);
-    }
+    assert (hash != NULL && hashLen >= 65);
 
     union
     {

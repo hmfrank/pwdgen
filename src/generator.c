@@ -22,10 +22,7 @@ static int validatePwd(char *password);
 void bundleInput(char *output, size_t outputLen)
 {
     /* Sanity check */
-    if (output == NULL || outputLen < MAX_INPUT_LEN)
-    {
-        exit(EXIT_FAILURE);
-    }
+    assert(output != NULL && outputLen >= MAX_INPUT_LEN);
 
     strncpy(output, account, 256);
     snprintf(output + strlen(output), 6, ".%u@", (unsigned) strlen(account));
@@ -38,10 +35,7 @@ void bundleInput(char *output, size_t outputLen)
 static int validatePwd(char *password)
 {
     /* Sanity check */
-    if (password == NULL)
-    {
-        exit(EXIT_FAILURE);
-    }
+    assert(password != NULL);
 
     size_t length = strlen(password);
     int containsUpperCase = 0;
