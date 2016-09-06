@@ -18,31 +18,31 @@
 static int validatePwd(char *password);
 
 /* Combines the input parameters and stores them in the output string */
-/* Shape: account.len@domain.len:version */
+/* Shape: account.len(account)@domain.len(domain):version */
 void bundleInput(char *output, size_t outputLen)
 {
-    char buffer[5] = {0};
-
     /* Sanity check */
-    assert(output != NULL);
-    assert(outputLen >= 256 * 2 + 10 + 16 + 1);
+    if (output == NULL || outputLen < MAX_INPUT_LEN)
+    {
+        exit(EXIT_FAILURE);
+    }
 
     strncpy(output, account, 256);
-    sprintf(buffer, ".%u@", (unsigned) strlen(account));
-    strncat(output, buffer, 5);
-    memset(buffer, 0, 5 * sizeof (char));
-
+    snprintf(output + strlen(output), 6, ".%u@", (unsigned) strlen(account));
     strncat(output, domain, 256);
-    sprintf(buffer, ".%u:", (unsigned) strlen(domain));
-    strncat(output, buffer, 5);
-
+    snprintf(output + strlen(output), 6, ".%u:", (unsigned) strlen(domain));
     strncat(output, version, 16);
-    memset(buffer, 0, 5 * sizeof (char));
 }
 
 /* Returns `true' if a password is valid */
 static int validatePwd(char *password)
 {
+    /* Sanity check */
+    if (password == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
     size_t length = strlen(password);
     int containsUpperCase = 0;
     int containsLowerCase = 0;
@@ -80,7 +80,7 @@ void generatePwd()
     } buff;
 
     /* Program will end up in infinite loop otherwise */
-    /* If this occurs, ioCLI has made a mistake */
+    /* If this occurs, some terrible mistake has happend */
     assert(pwdLen >= 4);
 
     memset(buff.uint8MPwd, 0, 256);

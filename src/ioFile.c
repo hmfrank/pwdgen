@@ -7,25 +7,31 @@
 #include <hashTools.h>
 #include <ioFile.h>
 
-char newHash[65] = {0};
-
-static void createFile();
+static void tryCreateFile(char const *path);
+static void bundleInputWithLen(char *output, size_t outputLen);
+static void generateLineHash(char *hash, size_t hashLen);
 static int checkNoDuplicate();
-static void appendAccount();
+static void insertAccount();
 
 /* Saves the new account to accounts.txt in case it is no duplicate */
 void saveAccount()
 {
     if (checkNoDuplicate())
     {
-        appendAccount();
+        insertAccount();
     }
 }
 
-/* Creates the file accounts.txt if it doesn't already exist */
-static void createFile()
+/* Creates a file if it doesn't already exist */
+static void tryCreateFile(char const *path)
 {
-    FILE *file = fopen("accounts.txt", "a");
+    /* Sanity check */
+    if (path == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *file = fopen(path, "a");
 
     if (file == NULL)
     {
@@ -36,24 +42,49 @@ static void createFile()
     fclose(file);
 }
 
-/* Returns 1 if the new account is not already listed in accounts.txt */
-static int checkNoDuplicate()
+/* Generates the same output as bundleInput(), but adds ':' and pwdLen at the end */
+/* Shape: account.len(account)@domain.len(domain):version:pwdLen */
+static void bundleInputWithLen(char *output, size_t outputLen)
 {
-    char readHash[65] = {0};
-    char readAcc[257] = {0};
-    char readDmn[257] = {0};
-    char readVer[17] = {0};
-    unsigned readPwdLen = 0;
+    /* Sanity check */
+    if (output == NULL || outputLen < MAX_INPUT_LEN + 4)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    bundleInput(output, MAX_INPUT_LEN);
+    snprintf(output + strlen(output), 5, ":%u", pwdLen);
+}
+
+static void generateLineHash(char *hash, size_t hashLen)
+{
+    /* Sanity check */
+    if (hash == NULL || hashLen < 65)
+    {
+        exit(EXIT_FAILURE);
+    }
 
     union
     {
-        char inChar[MAX_INPUT_LEN];
-        uint8_t inUint8[MAX_INPUT_LEN - 1];
+        char inChar[MAX_INPUT_LEN + 4];
+        uint8_t inUint8[MAX_INPUT_LEN + 3];
     } buff;
 
-    memset(buff.inChar, 0, MAX_INPUT_LEN * sizeof (char));
-    createFile();
+    memset(buff.inChar, 0, (MAX_INPUT_LEN + 4) * sizeof (char));
+    bundleInputWithLen(buff.inChar, MAX_INPUT_LEN + 4);
+    charToUint8_t(buff.inUint8, buff.inChar, MAX_INPUT_LEN + 3);
+    hashSHA256(buff.inUint8, 32, buff.inUint8, strlen(buff.inChar));
+    uint8_tToHex(hash, 65, buff.inUint8, 32);
+    memset(buff.inChar, 0, (MAX_INPUT_LEN + 4) * sizeof (char));
+}
+
+/* Returns 1 if the new account is not already listed in accounts.txt */
+static int checkNoDuplicate()
+{
+    tryCreateFile("accounts.txt");
     FILE *file = fopen("accounts.txt", "r");
+    char newHash[65] = {0};
+    char readHash[65] = {0};
 
     if (file == NULL)
     {
@@ -61,13 +92,9 @@ static int checkNoDuplicate()
         exit(EXIT_FAILURE);
     }
 
-    bundleInput(buff.inChar, MAX_INPUT_LEN);
-    charToUint8_t(buff.inUint8, buff.inChar, MAX_INPUT_LEN - 1);
-    hashSHA256(buff.inUint8, 32, buff.inUint8, strlen(buff.inChar));
-    uint8_tToHex(newHash, 65, buff.inUint8, 32);
+    generateLineHash(newHash, 65);
 
-    while ((fscanf(file, "%s %s %s %s %u", readHash, readAcc, readDmn,
-        readVer, &readPwdLen)) != EOF)
+    while ((fscanf(file, "%64s", readHash)) != EOF)
     {
         if (STRCMP(readHash, ==, newHash))
         {
@@ -78,23 +105,62 @@ static int checkNoDuplicate()
     }
 
     fclose(file);
-    memset(buff.inChar, 0, MAX_INPUT_LEN * sizeof (char));
     return 1;
 }
 
-/* Appends the new account to the list of accounts.txt */
-static void appendAccount()
+/* Inserts the new account into accounts.txt, keeping an alphabetical order */
+static void insertAccount()
 {
-    FILE *file = fopen("accounts.txt", "a");
+    tryCreateFile("accountsTmp.txt");
+    FILE *file = fopen("accounts.txt", "r");
+    FILE *fileTmp = fopen("accountsTmp.txt", "w");
+    char newLine[MAX_LINE_LEN] = {0};
+    char line[MAX_LINE_LEN] = {0};
+    int notInserted = 1;
 
-    if (file == NULL)
+    if (file == NULL || fileTmp == NULL)
     {
         fprintf(stderr, "Could not open file! Exiting...\n");
         exit(EXIT_FAILURE);
     }
 
-    fprintf(file, "%s %s %s %s %u\n", newHash, account, domain, version, pwdLen);
-    printf("\nAdded new account to your list.\n");
+    generateLineHash(newLine, 65);
+    strncat(newLine, " ", 1);
+    bundleInputWithLen(newLine + 65, MAX_INPUT_LEN + 4);
+    strncat(newLine, "\n", 1);
+
+    /* Write new account list in accountsTmp.txt */
+    while (fgets(line, MAX_LINE_LEN, file) != NULL)
+    {
+        if (notInserted && STRCMP(newLine + 65, <, line + 65))
+        {
+            fprintf(fileTmp, "%s", newLine);
+            notInserted = 0;
+        }
+
+        fprintf(fileTmp, "%s", line);
+        memset(line, 0, MAX_LINE_LEN);
+    }
+
+    if (notInserted)
+    {
+        fprintf(fileTmp, "%s", newLine);
+    }
+
     fclose(file);
-    memset(newHash, 0, 65 * sizeof(char));
+    fclose(fileTmp);
+    file = fopen("accounts.txt", "w");
+    fileTmp = fopen("accountsTmp.txt", "r");
+
+    /* Copy new list over to accounts.txt */
+    while (fgets(line, MAX_LINE_LEN, fileTmp) != NULL)
+    {
+        fprintf(file, "%s", line);
+    }
+
+    fclose(file);
+    fclose(fileTmp);
+    memset(newLine, 0, MAX_LINE_LEN);
+    memset(line, 0, MAX_LINE_LEN);
+    printf("\nAdded new account to your list.\n");
 }
