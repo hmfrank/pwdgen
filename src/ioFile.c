@@ -70,7 +70,8 @@ static void generateLineHash(char *hash, size_t hashLen)
     memset(buff.inChar, 0, (MAX_INPUT_LEN + 4) * sizeof (char));
 }
 
-/* Returns 1 if the new account is not already listed in accounts.txt */
+/* Returns `1' if the new account is not already listed in accounts.txt */
+/* A `0' is returned in the opposite case */
 static int checkNoDuplicate()
 {
     tryCreateFile("accounts.txt");
@@ -88,7 +89,7 @@ static int checkNoDuplicate()
 
     while ((fscanf(file, "%64s", readHash)) != EOF)
     {
-        if (STRCMP(readHash, ==, newHash))
+        if (STRNCMP(readHash, ==, newHash, 64))
         {
             printf("\nAccount already in your list! Consider using the loading function.\n");
             fclose(file);
@@ -124,7 +125,7 @@ static void insertAccount()
     /* Write new account list in accountsTmp.txt */
     while (fgets(line, MAX_LINE_LEN, file) != NULL)
     {
-        if (notInserted && STRCMP(newLine + 65, <, line + 65))
+        if (notInserted && STRNCMP(newLine + 65, <, line + 65, MAX_INPUT_LEN - 1 + 4))
         {
             fprintf(fileTmp, "%s", newLine);
             notInserted = 0;
@@ -155,4 +156,32 @@ static void insertAccount()
     memset(newLine, 0, MAX_LINE_LEN);
     memset(line, 0, MAX_LINE_LEN);
     printf("\nAdded new account to your list.\n");
+}
+
+/* Reads the a specific line of accounts.txt, storing the parameters globally, */
+/* and returning `1' on success and `0' when the line couldn't be reached */
+int loadAccountLine(unsigned lineNum)
+{
+    FILE *file = fopen("accounts.txt", "r");
+    char hash[65];
+
+    if (file == NULL)
+    {
+        fprintf(stderr, "Could not open file! Exiting...\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (unsigned i = 0; i < lineNum - 1; i++)
+    {
+        fgets(hash, 1, file);
+    }
+
+    if (fscanf(file, "%64s %256s.%3u@%256s.%3u:%16s:%3u", hash, account, &pwdLen,
+        domain, &pwdLen, version, &pwdLen) == EOF)
+    {
+        return 0;
+    }
+
+    fclose(file);
+    return 1;
 }

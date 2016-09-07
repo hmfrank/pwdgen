@@ -3,7 +3,6 @@
 #include <generator.h>
 #include <globals.h>
 #include <ioCLI.h>
-#include <ioFile.h>
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +14,6 @@ int main(int argc, char *argv[])
     }
 
     askForInput();
-    saveAccount();
     generatePwd();
     showOutput();
     eraseParams();

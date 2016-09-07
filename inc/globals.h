@@ -2,6 +2,9 @@
 #define GLOBALS_H
 
 #define STRCMP(a, R, b) (strcmp(a, b) R 0)
+#define STRNCMP(a, R, b, l) (strncmp(a, b, l) R 0)
+/* TODO: Make this an inline function */
+#define FREE(p) free(p); p = NULL
 
 /* "account.len(account)@domain.len(domain):version\0" */
 #define MAX_INPUT_LEN (256 + 5 + 256 + 5 + 16 + 1)

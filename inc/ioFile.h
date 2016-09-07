@@ -2,7 +2,9 @@
 #define IO_FILE_H
 
 #define saveAccount() pwdgenSaveAccount()
+#define loadAccountLine(a) pwdgenLoadAccountLine(a)
 
 void saveAccount();
+int loadAccountLine(unsigned lineNum);
 
 #endif

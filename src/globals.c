@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,8 +21,12 @@ void initParams()
     version = calloc(17, sizeof (char));
     password = calloc(257, sizeof (char));
 
-    assert(masterPwd != NULL && account != NULL && domain != NULL &&
-        version != NULL && password != NULL);
+    if (masterPwd == NULL || account == NULL || domain == NULL ||
+        version == NULL || password == NULL)
+    {
+        fprintf(stderr, "Allocation error! Exiting...\n");
+        exit(EXIT_FAILURE);
+    }
 
     pwdLen = 0;
     debug = 0;
@@ -37,11 +41,11 @@ void eraseParams()
     memset(version, 0, 17 * sizeof (char));
     memset(password, 0, 257 * sizeof (char));
 
-    free(masterPwd);
-    free(account);
-    free(domain);
-    free(version);
-    free(password);
+    FREE(masterPwd);
+    FREE(account);
+    FREE(domain);
+    FREE(version);
+    FREE(password);
 
     pwdLen = 0;
 }
