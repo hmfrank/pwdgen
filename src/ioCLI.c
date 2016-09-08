@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,14 +19,14 @@ void askForInput()
 
     printf("== Deterministic Password Generator (V3) ==\n"
         "Do you wish to add a new account to your list or load an existing one?\n\n"
-        "  Selection   Name\n"
+        "Selection   Name\n"
         "------------------------------------\n"
-        "* 0           Create new account\n"
-        "  1           Load exisint account\n\n");
+        "    0       Create new account\n"
+        "*   1       Load existing account\n\n");
 
     do
     {
-        memset(buffer, 0, 3 * sizeof (char));
+        memset(buffer, 0, 3);
         printf("Enter a number, or press ENTER to choose the default [*]: ");
         fgets(buffer, 3, stdin);
         index = strcspn(buffer, "\n");
@@ -43,13 +44,13 @@ void askForInput()
             continue;
         }
 
-        if (buffer[0] == '0' || strlen(buffer) == 0)
+        if (buffer[0] == '0')
         {
             askForNewAccount();
             saveAccount();
             return;
         }
-        else if (buffer[0] == '1')
+        else if (buffer[0] == '1' || strlen(buffer) == 0)
         {
             askForSavedAccount();
             return;
@@ -67,7 +68,7 @@ static void askForNewAccount()
 
     do
     {
-        memset(buffer, 0, 258 * sizeof (char));
+        memset(buffer, 0, 258);
         printf("Account:           ");
         fgets(buffer, 258, stdin);
         index = strcspn(buffer, "\n");
@@ -89,7 +90,7 @@ static void askForNewAccount()
 
     do
     {
-        memset(buffer, 0, 258 * sizeof (char));
+        memset(buffer, 0, 258);
         printf("Domain:            ");
         fgets(buffer, 258, stdin);
         index = strcspn(buffer, "\n");
@@ -111,7 +112,7 @@ static void askForNewAccount()
 
     do
     {
-        memset(buffer, 0, 258 * sizeof (char));
+        memset(buffer, 0, 258);
         printf("Version:           ");
         fgets(buffer, 18, stdin);
         index = strcspn(buffer, "\n");
@@ -134,7 +135,7 @@ static void askForNewAccount()
 
     do
     {
-        memset(buffer, 0, 258 * sizeof (char));
+        memset(buffer, 0, 258);
         printf("Length  (10..256): ");
         fgets(buffer, 5, stdin);
         index = strcspn(buffer, "\n");
@@ -147,7 +148,7 @@ static void askForNewAccount()
         if (buffer[3] != '\0')
         {
             flush();
-            lBuff = 0;
+            continue;
         }
         else
         {
@@ -158,23 +159,61 @@ static void askForNewAccount()
     while (lBuff < 10 || lBuff > 256);
 
     pwdLen = (unsigned) lBuff;
-    memset(buffer, 0, 258 * sizeof (char));
+    memset(buffer, 0, 258);
     index = 0;
 }
 
-/* Asks the user for the number of the to-be-loaded account from the list */
+/* Lets the user select a to-be-loaded account and lets ioFile load that account */
 static void askForSavedAccount()
 {
-    printf("Your account list:\n\n"
-        "  Selection   Account Domain Version Length\n"
-        "---------------------------------------------\n");
+    /* NOTE: The output of bundleInput() could also be printed */
+    /* Maybe as an option */
 
-    loadAccountLine(1);
-    printf("%s %s %s %u\n", account, domain, version, pwdLen);
+    char buffer[7] = {0};
+    unsigned i = 0;
+    size_t index;
+    long lBuff;
+
+    printf("\n== Your account list (accounts.txt) ==\n"
+        "Selection   Account Domain Version Length\n"
+        "-------------------------------------------\n");
+
+    while (loadAccountLine(i))
+    {
+        printf("%5u       %s %s %s %u\n", i++, account, domain, version, pwdLen);
+    }
+
+    printf("\n");
+
+    do
+    {
+        memset(buffer, 0, 7);
+        printf("Enter the number of an entry to load it: ");
+        fgets(buffer, 7, stdin);
+        index = strcspn(buffer, "\n");
+
+        if (index < strlen(buffer))
+        {
+            buffer[index] = 0;
+        }
+
+        if (buffer[5] != '\0')
+        {
+            flush();
+            continue;
+        }
+        else
+        {
+            lBuff = strtol(buffer, NULL, 10);
+        }
+    }
+    while (lBuff < 0 || lBuff > (long) i - 1 || lBuff > UINT_MAX);
+
+    loadAccountLine((unsigned) lBuff);
 }
 
 /* Empties stdin up to the next newline */
-/* Will require a keystroke if was already stdin empty */
+/* Will require a keystroke if stdin was already empty */
 static void flush()
 {
     char ch;

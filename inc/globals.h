@@ -9,7 +9,7 @@
 /* "account.len(account)@domain.len(domain):version\0" */
 #define MAX_INPUT_LEN (256 + 5 + 256 + 5 + 16 + 1)
 /* "Hash account.len(account)@domain.len(domain):version:pwdLen\n\0" */
-#define MAX_LINE_LEN (64 + 1 + MAX_INPUT_LEN - 1 + 1 + 3 + 2)
+#define MAX_LINE_LEN (64 + 1 + 256 + 1 + 256 + 1 + 16 + 1 + 3 + 1 + 1)
 
 #define initParams() pwdgenInitParams()
 #define eraseParams() pwdgenEraseParams()

@@ -15,11 +15,12 @@
 #include <hashTools.h>
 #include <interpreter.h>
 
+static void bundleInput(char *output, size_t outputLen);
 static int validatePwd(char *password);
 
 /* Combines the input parameters and stores them in the output string */
 /* Shape: account.len(account)@domain.len(domain):version */
-void bundleInput(char *output, size_t outputLen)
+static void bundleInput(char *output, size_t outputLen)
 {
     /* Sanity check */
     assert(output != NULL && outputLen >= MAX_INPUT_LEN);
@@ -64,42 +65,28 @@ void generatePwd()
     uint8_t hashedMPwd[32] = {0};
     uint8_t hashedInput[32] = {0};
     uint8_t digest[194] = {0};
-    size_t lenInput = 0;
-
-    union
-    {
-        char inChar[MAX_INPUT_LEN];
-        uint8_t uint8Input[MAX_INPUT_LEN - 1];
-        uint8_t uint8MPwd[256];
-    } buff;
+    char buffer[MAX_INPUT_LEN] = {0};
 
     /* Program will end up in infinite loop otherwise */
     /* If this occurs, some terrible mistake has happend */
     assert(pwdLen >= 4);
 
-    memset(buff.uint8MPwd, 0, 256);
-    charToUint8_t(buff.uint8MPwd, masterPwd, strlen(masterPwd));
-    hashSHA256(hashedMPwd, 32, buff.uint8MPwd, strlen(masterPwd));
-    memset(buff.inChar, 0, MAX_INPUT_LEN * sizeof (char));
-    bundleInput(buff.inChar, MAX_INPUT_LEN);
+    hashSHA256(hashedMPwd, 32, (uint8_t *) masterPwd, strlen(masterPwd));
+    bundleInput(buffer, MAX_INPUT_LEN);
+    hashSHA256(hashedInput, 32, (uint8_t *) buffer, strlen(buffer));
 
     if (debug)
     {
-        printf("\nInput: `%s\'\n", buff.inChar);
+        printf("\nInput: `%s\'\n", buffer);
     }
-
-    lenInput = strlen(buff.inChar);
-    charToUint8_t(buff.uint8Input, buff.inChar, lenInput);
-    hashSHA256(hashedInput, 32, buff.uint8Input, lenInput);
-
 
     do
     {
         /* password, len, salt, len, cost, block size, parallelisation, digest, len */
         /* TODO: Test for errors */
         libscrypt_scrypt(hashedMPwd, 32, hashedInput, 32, pow(2, 17), 8, 1, digest, 194);
-        encodeBase64(buff.inChar, 192 / 3 * 4 + 1, digest, 192);
-        strncpy(password, buff.inChar, pwdLen - 2);
+        encodeBase64(buffer, 192 / 3 * 4 + 1, digest, 192);
+        strncpy(password, buffer, pwdLen - 2);
 
         if (validatePwd(password))
         {
@@ -126,8 +113,8 @@ void generatePwd()
     interpretLastBits(digest);
 
     /* Erase confidential data */
-    memset(buff.inChar, 0, MAX_INPUT_LEN * sizeof (char));
     memset(hashedMPwd, 0, 32);
     memset(hashedInput, 0, 32);
     memset(digest, 0, 194);
+    memset(buffer, 0, MAX_INPUT_LEN);
 }

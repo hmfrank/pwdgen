@@ -15,11 +15,11 @@ int debug;
 /* Allocates the parameters and zeroises them */
 void initParams()
 {
-    masterPwd = calloc(257, sizeof (char));
-    account = calloc(257, sizeof (char));
-    domain = calloc(257, sizeof (char));
-    version = calloc(17, sizeof (char));
-    password = calloc(257, sizeof (char));
+    masterPwd = calloc(257, sizeof *masterPwd);
+    account = calloc(257, sizeof *account);
+    domain = calloc(257, sizeof *domain);
+    version = calloc(17, sizeof *version);
+    password = calloc(257, sizeof *password);
 
     if (masterPwd == NULL || account == NULL || domain == NULL ||
         version == NULL || password == NULL)
@@ -35,11 +35,11 @@ void initParams()
 /* Zeroises and deallocates the parameters */
 void eraseParams()
 {
-    memset(masterPwd, 0, 257 * sizeof (char));
-    memset(account, 0, 257 * sizeof (char));
-    memset(domain, 0, 257 * sizeof (char));
-    memset(version, 0, 17 * sizeof (char));
-    memset(password, 0, 257 * sizeof (char));
+    memset(masterPwd, 0, 257);
+    memset(account, 0, 257);
+    memset(domain, 0, 257);
+    memset(version, 0, 17);
+    memset(password, 0, 257);
 
     FREE(masterPwd);
     FREE(account);
