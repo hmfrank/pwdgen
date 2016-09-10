@@ -5,6 +5,6 @@
 #define loadAccountLine(a) pwdgenLoadAccountLine(a)
 
 void saveAccount();
-int loadAccountLine(unsigned lineNum);
+int loadAccountLine(long lineNum);
 
 #endif

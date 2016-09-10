@@ -31,7 +31,9 @@ static void tryCreateFile(char const *path)
 
     if (file == NULL)
     {
-        fprintf(stderr, "Could not create file! Exiting...\n");
+        fprintf(stderr, "Could not create file! Exiting...\n"
+            "Try checking the file permissions.");
+        eraseParams();
         exit(EXIT_FAILURE);
     }
 
@@ -51,6 +53,7 @@ static int checkNoDuplicate()
     if (file == NULL)
     {
         fprintf(stderr, "Could not open file! Exiting...\n");
+        eraseParams();
         exit(EXIT_FAILURE);
     }
 
@@ -61,7 +64,8 @@ static int checkNoDuplicate()
     {
         if (STRNCMP(readHash, ==, newHash, 64))
         {
-            printf("\nAccount already in your list! Consider using the loading function.\n");
+            printf("\nAccount already in your list! Use the loading function"
+                " to save time.\n");
             fclose(file);
             return 0;
         }
@@ -85,10 +89,12 @@ static void insertAccount()
     if (file == NULL || fileTmp == NULL)
     {
         fprintf(stderr, "Could not open file! Exiting...\n");
+        eraseParams();
         exit(EXIT_FAILURE);
     }
 
-    snprintf(newLine + 65, MAX_LINE_LEN - 65, "%s %s %s %u", account, domain, version, pwdLen);
+    snprintf(newLine + 65, MAX_LINE_LEN - 65, "%s %s %s %u", account, domain,
+        version, pwdLen);
     hashSHA256Hex(newHash, 65, newLine + 65, strlen(newLine + 65));
     strncpy(newLine, newHash, 65);
     newLine[64] = ' ';
@@ -132,7 +138,7 @@ static void insertAccount()
 
 /* Reads a specific line (starting at 0) of accounts.txt, stores the read parameters */
 /* globally, and returns `1' on success and `0' when the line couldn't be reached */
-int loadAccountLine(unsigned lineNum)
+int loadAccountLine(long lineNum)
 {
     FILE *file = fopen("accounts.txt", "r");
     char hash[65];
@@ -141,12 +147,14 @@ int loadAccountLine(unsigned lineNum)
     if (file == NULL)
     {
         fprintf(stderr, "Could not open accounts.txt! Exiting...\n"
-            "Try adding a new account to create the file.\n");
+            "Try adding a new account to create the file or check the file"
+            " permissions.\n");
+        eraseParams();
         exit(EXIT_FAILURE);
     }
 
     /* Move to the beginning of the desired line */
-    for (unsigned i = 0; i < lineNum; i++)
+    for (long i = 0; i < lineNum; i++)
     {
         do
         {
