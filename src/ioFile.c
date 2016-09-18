@@ -12,7 +12,7 @@ static void tryCreateFile(char const *path);
 static int checkNoDuplicate();
 static void insertAccount();
 
-/* Saves the new account to accounts.txt in case it is no duplicate */
+/* Saves the new account to F_FILE_PATH in case it is no duplicate */
 void saveAccount()
 {
     if (checkNoDuplicate())
@@ -40,12 +40,12 @@ static void tryCreateFile(char const *path)
     fclose(file);
 }
 
-/* Returns `1' if the new account is not already listed in accounts.txt */
+/* Returns `1' if the new account is not already listed in F_FILE_PATH */
 /* A `0' is returned in the opposite case */
 static int checkNoDuplicate()
 {
-    tryCreateFile("accounts.txt");
-    FILE *file = fopen("accounts.txt", "r");
+    tryCreateFile(F_FILE_PATH);
+    FILE *file = fopen(F_FILE_PATH, "r");
     char newHash[65] = {0};
     char readHash[65] = {0};
     char line[MAX_LINE_LEN] = {0};
@@ -75,12 +75,12 @@ static int checkNoDuplicate()
     return 1;
 }
 
-/* Inserts the new account into accounts.txt, keeping an alphabetical order */
+/* Inserts the new account into F_FILE_PATH, keeping an alphabetical order */
 static void insertAccount()
 {
-    tryCreateFile("accountsTmp.txt");
-    FILE *file = fopen("accounts.txt", "r");
-    FILE *fileTmp = fopen("accountsTmp.txt", "w");
+    tryCreateFile(F_FILE_PATH_TMP);
+    FILE *file = fopen(F_FILE_PATH, "r");
+    FILE *fileTmp = fopen(F_FILE_PATH_TMP, "w");
     char newLine[MAX_LINE_LEN] = {0};
     char readLine[MAX_LINE_LEN] = {0};
     char newHash[65] = {0};
@@ -100,7 +100,7 @@ static void insertAccount()
     newLine[64] = ' ';
     strncat(newLine, "\n", 1);
 
-    /* Write new account list in accountsTmp.txt */
+    /* Write new account list in F_FILE_PATH_TMP */
     while (fgets(readLine, MAX_LINE_LEN, file) != NULL)
     {
         if (notInserted && STRNCMP(newLine + 65, <, readLine + 65, MAX_LINE_LEN - 65))
@@ -120,10 +120,10 @@ static void insertAccount()
 
     fclose(file);
     fclose(fileTmp);
-    file = fopen("accounts.txt", "w");
-    fileTmp = fopen("accountsTmp.txt", "r");
+    file = fopen(F_FILE_PATH, "w");
+    fileTmp = fopen(F_FILE_PATH_TMP, "r");
 
-    /* Copy new list over to accounts.txt */
+    /* Copy new list over to F_FILE_PATH */
     while (fgets(readLine, MAX_LINE_LEN, fileTmp) != NULL)
     {
         fprintf(file, "%s", readLine);
@@ -136,17 +136,17 @@ static void insertAccount()
     printf("\nAdded new account to your list.\n");
 }
 
-/* Reads a specific line (starting at 0) of accounts.txt, stores the read parameters */
+/* Reads a specific line (starting at 0) of F_FILE_PATH, stores the read parameters */
 /* globally, and returns `1' on success and `0' when the line couldn't be reached */
 int loadAccountLine(long lineNum)
 {
-    FILE *file = fopen("accounts.txt", "r");
+    FILE *file = fopen(F_FILE_PATH, "r");
     char hash[65];
     int ch;
 
     if (file == NULL)
     {
-        fprintf(stderr, "Could not open accounts.txt! Exiting...\n"
+        fprintf(stderr, "Could not open F_FILE_PATH! Exiting...\n"
             "Try adding a new account to create the file or check the file"
             " permissions.\n");
         eraseParams();

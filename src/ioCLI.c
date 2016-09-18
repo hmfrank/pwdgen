@@ -97,7 +97,7 @@ static void askForSavedAccount()
 
     long i = 0;
 
-    printf("\n== Your account list (accounts.txt) ==\n"
+    printf("\n== Your account list ("F_FILE_PATH") ==\n"
         "Selection   Account Domain Version Length\n"
         "-------------------------------------------\n");
 
@@ -222,8 +222,8 @@ static void readLong(long * const dest, size_t len, long min, long max, char con
             *dest = strtol(buffer, NULL, 10);
         }
     }
-    while (invalidNatNum(buffer) || reloop ||
-        *dest < min || *dest > max);
+    while (strlen(buffer) == 0 || reloop ||
+        invalidNatNum(buffer) || *dest < min || *dest > max);
 
     memset(buffer, 0, len + 1);
 }
