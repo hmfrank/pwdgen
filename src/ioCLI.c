@@ -18,7 +18,10 @@ static inline int invalidNatNum(char const *str);
 static void flush();
 static char readChNoEcho();
 
-/* Asks the user for the mode of the program and executes corresponding I/O routines */
+/**
+ * Lets the user select the program mode (create new or load existing account)
+ * and executes the corresponding I/O routines.
+ */
 void askForInput()
 {
     char buffer[3] = {0};
@@ -71,7 +74,9 @@ void askForInput()
     askForMasterPwd();
 }
 
-/* Ask the user for the parameters of a new account */
+/**
+ * Ask the user for the parameters of a new account.
+ */
 static void askForNewAccount()
 {
     long lBuff;
@@ -89,7 +94,10 @@ static void askForNewAccount()
     pwdLen = (unsigned) lBuff;
 }
 
-/* Lets the user select a to-be-loaded account and lets ioFile load that account */
+/**
+ * Displays a list of all locally saved accounts, lets the user select one,
+ * and makes ioFile write the account parameters to the global variables.
+ */
 static void askForSavedAccount()
 {
     /* NOTE: The output of bundleInput() could also be printed */
@@ -111,22 +119,25 @@ static void askForSavedAccount()
     loadAccountLine(i);
 }
 
-/* Asks the user for their master password and saves it globally */
+/**
+ * Asks the user for their master password, displaying nothing,
+ * and saves it globally in `masterPwd'.
+ */
 static void askForMasterPwd()
 {
-    char const ENTER = 10;
-    char const BACKSPACE = 127;
+    char const kEnter = 10;
+    char const kBackspace = 127;
 
     char ch;
     size_t len;
 
     printf("Master password: ");
 
-    while ((ch = readChNoEcho()) != ENTER)
+    while ((ch = readChNoEcho()) != kEnter)
     {
         len = strlen(masterPwd);
 
-        if (ch == BACKSPACE)
+        if (ch == kBackspace)
         {
             if (len != 0)
             {
@@ -149,15 +160,23 @@ static void askForMasterPwd()
     }
 }
 
-/* Shows the user the generated password */
+/**
+ * Shows the user the generated password.
+ */
 void showOutput()
 {
     printf("\nPassword: %s\n", password);
 }
 
-/* Displays a prompt and reads a char string from stdin of the length len (including '\0') */
-/* If the string was unsatisfactory, the prompt is displayed again */
-static void readStr(char * const dest, size_t len, char const *text)
+/**
+ * Displays a prompt and reads a char string from stdin (including '\0').
+ * If the string was unsatisfactory, the prompt is displayed again.
+ *
+ * @param kDest location where read string will be saved
+ * @param len   max length of to-be-read string (including '\0')
+ * @param text  will be displayed in front of input prompt
+ */
+static void readStr(char * const kDest, size_t len, char const *text)
 {
     char buffer[len + 1];
     size_t index;
@@ -186,13 +205,21 @@ static void readStr(char * const dest, size_t len, char const *text)
     while (strlen(buffer) == 0 || reloop ||
         strcspn(buffer, " ") < strlen(buffer));
 
-    strncpy(dest, buffer, len);
+    strncpy(kDest, buffer, len);
     memset(buffer, 0, len + 1);
 }
 
-/* Works like readStr(), but converts the read string of char's to a long */
-/* If the long is unsatisfactory, the prompt is displayed again */
-static void readLong(long * const dest, size_t len, long min, long max, char const *text)
+/**
+ * Works like readStr(), but converts the read string of char's to a long.
+ * If the long is unsatisfactory, the prompt is displayed again.
+ *
+ * @param kDest location where read long will be saved
+ * @param len   max length of to-be-read string (including '\0')
+ * @param min   smallest acceptable value
+ * @param max   largest acceptable value
+ * @param text  will be displayed in front of input prompt
+ */
+static void readLong(long * const kDest, size_t len, long min, long max, char const *text)
 {
     char buffer[len + 1];
     size_t index;
@@ -219,24 +246,31 @@ static void readLong(long * const dest, size_t len, long min, long max, char con
         }
         else
         {
-            *dest = strtol(buffer, NULL, 10);
+            *kDest = strtol(buffer, NULL, 10);
         }
     }
     while (strlen(buffer) == 0 || reloop ||
-        invalidNatNum(buffer) || *dest < min || *dest > max);
+        invalidNatNum(buffer) || *kDest < min || *kDest > max);
 
     memset(buffer, 0, len + 1);
 }
 
-/* Returns whether str points to a char representation of a natural number or not */
-/* E.g. "01" or ".1" will be rejected */
-static inline int invalidNatNum(char const *str)
+/**
+ * Checks whether a string of char's is a valid representation of a natural
+ * number or not. E.g. "01" or ".1" will be rejected.
+ *
+ * @param kStr location of to-be-checked string
+ * @return    1 when string is accepted, 0 otherwise
+ */
+static inline int invalidNatNum(char const *kStr)
 {
-    return strspn(str, "0123456789") < strlen(str) || (str[0] == '0' && str[1] != '\0');
+    return strspn(kStr, "0123456789") < strlen(kStr) || (kStr[0] == '0' && kStr[1] != '\0');
 }
 
-/* Empties stdin up to the next newline */
-/* Will require a keystroke if stdin was already empty */
+/**
+ * Empties stdin up to the next newline.
+ * Will require a keystroke if stdin was already empty before calling flush().
+ */
 static void flush()
 {
     char ch;
@@ -248,7 +282,11 @@ static void flush()
     while (ch != EOF && ch != '\n');
 }
 
-/* Reads one character from stdin without displaying it and returns it */
+/**
+ * Reads one character from stdin without displaying it and returns it.
+ *
+ * @return read character
+ */
 static char readChNoEcho()
 {
     char ch;
@@ -264,4 +302,3 @@ static char readChNoEcho()
     tcsetattr(STDIN_FILENO, TCSANOW, &t_old);
     return ch;
 }
-

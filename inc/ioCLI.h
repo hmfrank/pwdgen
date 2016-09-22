@@ -1,6 +1,7 @@
-#ifndef IOCLI_H
-#define IOCLI_H
+#ifndef INC_IOCLI_H_
+#define INC_IOCLI_H_
 
+/* Prevent interpositioning */
 #define askForInput() pwdgenAskForInput()
 #define showOutput() pwdgenShowOutput()
 

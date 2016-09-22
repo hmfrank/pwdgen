@@ -18,8 +18,13 @@
 static void bundleInput(char *output, size_t outputLen);
 static int validatePwd(char *password);
 
-/* Combines the input parameters and stores them in the output string */
-/* Shape: account.len(account)@domain.len(domain):version */
+/**
+ * Combines the global input parameters and stores the result in output.
+ * Shape: account.len(account)@domain.len(domain):version
+ *
+ * @param output    combination will be stored here
+ * @param outputLen length of output
+ */
 static void bundleInput(char *output, size_t outputLen)
 {
     /* Sanity check */
@@ -32,7 +37,12 @@ static void bundleInput(char *output, size_t outputLen)
     strncat(output, version, 16);
 }
 
-/* Returns `true' if a password is valid */
+/**
+ * Checks if a password is valid or not.
+ *
+ * @param password points to the to-be-checked password
+ * @return         1 when password is valid, 0 otherwise
+ */
 static int validatePwd(char *password)
 {
     /* Sanity check */
@@ -58,7 +68,10 @@ static int validatePwd(char *password)
     return containsUpperCase && containsLowerCase;
 }
 
-/* Generates a password and stores it in the global variable `password' */
+/**
+ * Generates a password from the input parameters and the master password,
+ * and stores it in the global variable `password'.
+ */
 /* TODO: Add more detailed description */
 void generatePwd()
 {
@@ -71,9 +84,9 @@ void generatePwd()
     /* If this occurs, some terrible mistake has happend */
     assert(pwdLen >= 4);
 
-    hashSHA256(hashedMPwd, 32, (uint8_t *) masterPwd, strlen(masterPwd));
+    hashSHA256((uint8_t *) masterPwd, strlen(masterPwd), hashedMPwd, 32);
     bundleInput(buffer, MAX_INPUT_LEN);
-    hashSHA256(hashedInput, 32, (uint8_t *) buffer, strlen(buffer));
+    hashSHA256((uint8_t *) buffer, strlen(buffer), hashedInput, 32);
 
     if (debug)
     {
@@ -85,7 +98,7 @@ void generatePwd()
         /* password, len, salt, len, cost, block size, parallelisation, digest, len */
         /* TODO: Test for errors */
         libscrypt_scrypt(hashedMPwd, 32, hashedInput, 32, pow(2, 17), 8, 1, digest, 194);
-        encodeBase64(buffer, 192 / 3 * 4 + 1, digest, 192);
+        encodeBase64(digest, 192, buffer, 192 / 3 * 4 + 1);
         strncpy(password, buffer, pwdLen - 2);
 
         if (validatePwd(password))

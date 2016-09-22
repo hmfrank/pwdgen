@@ -1,9 +1,9 @@
-#ifndef GENERATOR_H
-#define GENERATOR_H
+#ifndef INC_GENERATOR_H_
+#define INC_GENERATOR_H_
 
 #include <stddef.h>
 
-/* `Defuses' global function */
+/* Prevent interpositioning */
 #define generatePwd() pwdgenGeneratePwd()
 
 void generatePwd();

@@ -12,7 +12,9 @@ static void tryCreateFile(char const *path);
 static int checkNoDuplicate();
 static void insertAccount();
 
-/* Saves the new account to F_FILE_PATH in case it is no duplicate */
+/**
+ * Saves the new account to F_FILE_PATH in case it is no duplicate.
+ */
 void saveAccount()
 {
     if (checkNoDuplicate())
@@ -21,13 +23,17 @@ void saveAccount()
     }
 }
 
-/* Creates a file if it doesn't already exist */
-static void tryCreateFile(char const *path)
+/**
+ * Creates a file at a specific path if it doesn't already exist.
+ *
+ * @param kPath location of string representation of file path
+ */
+static void tryCreateFile(char const *kPath)
 {
     /* Sanity check */
-    assert(path != NULL);
+    assert(kPath != NULL);
 
-    FILE *file = fopen(path, "a");
+    FILE *file = fopen(kPath, "a");
 
     if (file == NULL)
     {
@@ -40,8 +46,12 @@ static void tryCreateFile(char const *path)
     fclose(file);
 }
 
-/* Returns `1' if the new account is not already listed in F_FILE_PATH */
-/* A `0' is returned in the opposite case */
+/**
+ * Checks whether the account specified by the global input parameters is
+ * already listed in F_FILE_PATH or not.
+ *
+ * @return 1 when no duplicate was found, 0 otherwise
+ */
 static int checkNoDuplicate()
 {
     tryCreateFile(F_FILE_PATH);
@@ -58,7 +68,7 @@ static int checkNoDuplicate()
     }
 
     snprintf(line, MAX_LINE_LEN, "%s %s %s %u", account, domain, version, pwdLen);
-    hashSHA256Hex(newHash, 65, line, strlen(line));
+    hashSHA256Hex(line, strlen(line), newHash, 65);
 
     while ((fscanf(file, "%64s", readHash)) != EOF)
     {
@@ -75,7 +85,9 @@ static int checkNoDuplicate()
     return 1;
 }
 
-/* Inserts the new account into F_FILE_PATH, keeping an alphabetical order */
+/**
+ * Inserts the new account into F_FILE_PATH, keeping an alphabetical order.
+ */
 static void insertAccount()
 {
     tryCreateFile(F_FILE_PATH_TMP);
@@ -95,7 +107,7 @@ static void insertAccount()
 
     snprintf(newLine + 65, MAX_LINE_LEN - 65, "%s %s %s %u", account, domain,
         version, pwdLen);
-    hashSHA256Hex(newHash, 65, newLine + 65, strlen(newLine + 65));
+    hashSHA256Hex(newLine + 65, strlen(newLine + 65), newHash, 65);
     strncpy(newLine, newHash, 65);
     newLine[64] = ' ';
     strncat(newLine, "\n", 1);
@@ -136,8 +148,13 @@ static void insertAccount()
     printf("\nAdded new account to your list.\n");
 }
 
-/* Reads a specific line (starting at 0) of F_FILE_PATH, stores the read parameters */
-/* globally, and returns `1' on success and `0' when the line couldn't be reached */
+/**
+ * Reads a specific line of F_FILE_PATH, stores the read parameters globally,
+ * and returns its success.
+ *
+ * @param lineNum number of to-be-read line (first line = 0)
+ * @return        1 on success, 0 otherwise
+ */
 int loadAccountLine(long lineNum)
 {
     FILE *file = fopen(F_FILE_PATH, "r");

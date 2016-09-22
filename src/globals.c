@@ -12,7 +12,12 @@ char *password;
 unsigned pwdLen;
 int debug;
 
-/* Allocates the parameters and zeroises them */
+extern inline void secureFree(void *ptr);
+
+/**
+ * Allocates the global input parameters and zeroises them.
+ * XXX: Caller must free allocated memory.
+ */
 void initParams()
 {
     masterPwd = calloc(257, sizeof *masterPwd);
@@ -32,7 +37,10 @@ void initParams()
     debug = 0;
 }
 
-/* Zeroises and deallocates the parameters */
+/**
+ * Zeroises and deallocates the global input parameters,
+ * as well as makes them point to NULL.
+ */
 void eraseParams()
 {
     memset(masterPwd, 0, 257);
@@ -41,11 +49,11 @@ void eraseParams()
     memset(version, 0, 17);
     memset(password, 0, 257);
 
-    FREE(masterPwd);
-    FREE(account);
-    FREE(domain);
-    FREE(version);
-    FREE(password);
+    secureFree(masterPwd);
+    secureFree(account);
+    secureFree(domain);
+    secureFree(version);
+    secureFree(password);
 
     pwdLen = 0;
 }

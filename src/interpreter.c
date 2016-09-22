@@ -6,7 +6,11 @@
 #include <globals.h>
 #include <interpreter.h>
 
-/* Interprets the last 12 bits of the digest and adjusts the password accordingly */
+/**
+ * Interprets the last 12 bits of a digest and adjusts `password' accordingly.
+ *
+ * @param digest location of hash digest
+ */
 void interpretLastBits(uint8_t *digest)
 {
     /* Sanity check */
