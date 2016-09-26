@@ -9,18 +9,18 @@ pwdgen tackles them.
 
 
 ## Problems of determinism
-1. Generated passwords are not always accepted by websites
-2. Too fast hashing makes brute-force attacks on the master password (relatively) easy
-3. Having to enter your account data prior to every generation is inconvenient
-4. Once-generated passwords cannot be changed later
+* Generated passwords are not always accepted by websites (1)
+* Too fast hashing makes brute-force attacks on the master password (relatively) easy (2)
+* Having to enter your account data prior to every generation is inconvenient (3)
+* Once-generated passwords cannot be changed later (4)
 
 ## My solutions
-1. Hash multiple times if bad passwords are generated
-1. Extract a number and a special character from the digest and include them in the password
-2. Use scrypt for slower hashing
-2. Generate a really strong digest (~1 min of generation) and store it locally. Then use that for every normal generation.
-3. Make generations quicker with a locally saved account list
-4. Include a version parameter in the generation
+* Hash multiple times if bad passwords are generated (1)
+* Extract a number and a special character from the digest and include them in the password (1)
+* Use scrypt for slower hashing (2)
+* Generate a really strong digest (~1 min of generation), store it locally, and then use that for every normal generation (2)
+* Make generations quicker with a locally saved account list (3)
+* Include a version parameter in the generation (4)
 
 ## How to compile it
 ```
