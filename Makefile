@@ -12,17 +12,23 @@ CLDEP   =$(SRC:%.c=%.d-e)
 OBJ     =$(SRC:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 INC     =-I./$(INCDIR)/
 
-CFLAGS  =-std=c99 ${INC} -Wall -Wextra -Wpedantic -Werror -g
+CFLAGS  =-std=c99 ${INC} -Wall -Wextra -Wpedantic -Werror
 LDFLAGS =-lcrypto -lm -lscrypt
 
 VPATH   =$(SRCDIR)
 
-.PHONY: all clean debug
+.PHONY: all clean debug script sDebug
 
 all: $(OBJ) $(EXE)
 
 debug:  CFLAGS += -g
-debug:  $(EXE)
+debug:  all
+
+script: CFLAGS += -D USE_ARGV_ONLY
+script: all
+
+sDebug: CFLAGS += -D USE_ARGV_ONLY -g
+sDebug: all
 
 $(OBJ): | $(OBJDIR)
 
