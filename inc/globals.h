@@ -35,20 +35,8 @@ extern int debug;
 /* Prevent interpositioning */
 #define initParams() pwdgenInitParams()
 #define eraseParams() pwdgenEraseParams()
-#define secureFree(a) pwdgenSecureFree(a)
 
 void initParams();
 void eraseParams();
-
-/**
- * Prevents dangling pointers by setting them to NULL after freeing.
- *
- * @param ptr to-be-freed pointer
- */
-inline void secureFree(void *ptr)
-{
-    free(ptr);
-    ptr = NULL;
-}
 
 #endif

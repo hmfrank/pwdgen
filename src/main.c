@@ -8,12 +8,17 @@ int main(int argc, char *argv[])
 {
     initParams();
 
+#ifndef USE_ARGV_ONLY
     if (argc >= 2 && STRCMP(argv[1], ==, "-d"))
     {
         debug = 1;
     }
 
-    askForInput();
+    getInput();
+#else
+    getInput(argc, argv);
+#endif
+
     generatePwd();
     showOutput();
     eraseParams();

@@ -9,6 +9,8 @@
 #include <ioCLI.h>
 #include <ioFile.h>
 
+#ifndef USE_ARGV_ONLY
+
 static void askForNewAccount();
 static void askForSavedAccount();
 static void askForMasterPwd();
@@ -22,10 +24,9 @@ static char readChNoEcho();
  * Lets the user select the program mode (create new or load existing account)
  * and executes the corresponding I/O routines.
  */
-void askForInput()
+void getInput()
 {
     char buffer[3] = {0};
-    size_t index;
 
     printf("== Deterministic Password Generator (V3) ==\n"
         "Do you wish to add a new account to your list or load an existing one?\n\n"
@@ -36,6 +37,8 @@ void askForInput()
 
     do
     {
+        size_t index;
+
         memset(buffer, 0, 3);
         printf("Enter a number, or press ENTER to choose the default [*]: ");
         fgets(buffer, 3, stdin);
@@ -72,6 +75,14 @@ void askForInput()
 
     printf("\n");
     askForMasterPwd();
+}
+
+/**
+ * Shows the user the generated password.
+ */
+void showOutput()
+{
+    printf("\nPassword: %s\n", password);
 }
 
 /**
@@ -127,15 +138,13 @@ static void askForMasterPwd()
 {
     char const kEnter = 10;
     char const kBackspace = 127;
-
     char ch;
-    size_t len;
 
     printf("Master password: ");
 
     while ((ch = readChNoEcho()) != kEnter)
     {
-        len = strlen(masterPwd);
+        size_t len = strlen(masterPwd);
 
         if (ch == kBackspace)
         {
@@ -161,14 +170,6 @@ static void askForMasterPwd()
 }
 
 /**
- * Shows the user the generated password.
- */
-void showOutput()
-{
-    printf("\nPassword: %s\n", password);
-}
-
-/**
  * Displays a prompt and reads a char string from stdin (including '\0').
  * If the string was unsatisfactory, the prompt is displayed again.
  *
@@ -179,11 +180,12 @@ void showOutput()
 static void readStr(char * const kDest, size_t len, char const *text)
 {
     char buffer[len + 1];
-    size_t index;
     int reloop;
 
     do
     {
+        size_t index;
+
         memset(buffer, 0, len + 1);
         reloop = 0;
 
@@ -222,11 +224,12 @@ static void readStr(char * const kDest, size_t len, char const *text)
 static void readLong(long * const kDest, size_t len, long min, long max, char const *text)
 {
     char buffer[len + 1];
-    size_t index;
     int reloop;
 
     do
     {
+        size_t index;
+
         memset(buffer, 0, len + 1);
         reloop = 0;
 
@@ -302,3 +305,39 @@ static char readChNoEcho()
     tcsetattr(STDIN_FILENO, TCSANOW, &t_old);
     return ch;
 }
+
+#else
+
+/**
+ * Reads the parameters passed to the program via argv and stores them globally.
+ */
+void getInput(int argc, char *argv[])
+{
+    if (argc < 6)
+    {
+        eraseParams();
+        exit(EXIT_FAILURE);
+    }
+
+    strncpy(account, argv[1], 257);
+    strncpy(domain, argv[2], 257);
+    strncpy(version, argv[3], 17);
+    pwdLen = (unsigned) atoi(argv[4]);
+    strncpy(masterPwd, argv[5], 257);
+
+    memset(argv[1], 0, 257);
+    memset(argv[2], 0, 257);
+    memset(argv[3], 0, 17);
+    memset(argv[4], 0, 257);
+    memset(argv[5], 0, 257);
+}
+
+/**
+ * Prints the generated password on the command line.
+ */
+void showOutput()
+{
+    printf("%s\n", password);
+}
+
+#endif

@@ -163,7 +163,7 @@ int loadAccountLine(long lineNum)
 
     if (file == NULL)
     {
-        fprintf(stderr, "Could not open F_FILE_PATH! Exiting...\n"
+        fprintf(stderr, "Could not open "F_FILE_PATH"! Exiting...\n"
             "Try adding a new account to create the file or check the file"
             " permissions.\n");
         eraseParams();
