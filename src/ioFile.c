@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,12 +9,12 @@
 #include <hashTools.h>
 #include <ioFile.h>
 
-static void tryCreateFile(char const *path);
+static inline FILE *secureFopen(char const *kPath, char const *kMode);
 static int checkNoDuplicate();
 static void insertAccount();
 
 /**
- * Saves the new account to F_FILE_PATH in case it is no duplicate.
+ * Saves the new account to F_LIST_PATH in case it is no duplicate.
  */
 void saveAccount()
 {
@@ -22,50 +23,44 @@ void saveAccount()
         insertAccount();
     }
 }
-
 /**
- * Creates a file at a specific path if it doesn't already exist.
+ * A wrapper for fopen() that also checks if the returned pointer is NULL.
+ * XXX: Caller must free allocated memory.
  *
- * @param kPath location of string representation of file path
+ * @param kPath path to file
+ * @param kMode mode for fopen (see its man page)
+ * @return      pointer to FILE structure
  */
-static void tryCreateFile(char const *kPath)
+static inline FILE *secureFopen(char const *kPath, char const *kMode)
 {
-    /* Sanity check */
-    assert(kPath != NULL);
-
-    FILE *file = fopen(kPath, "a");
+    FILE *file = fopen(kPath, kMode);
 
     if (file == NULL)
     {
-        fprintf(stderr, "Could not create file! Exiting...\n"
-            "Try checking the file permissions.");
+        fprintf(stderr, "Could not access `%s\'! Exiting...\nTry checking your"
+            " permissions. Maybe it needs to be created first.\n", kPath);
         eraseParams();
         exit(EXIT_FAILURE);
     }
 
-    fclose(file);
+    return file;
 }
 
 /**
  * Checks whether the account specified by the global input parameters is
- * already listed in F_FILE_PATH or not.
+ * already listed in F_LIST_PATH or not.
  *
  * @return 1 when no duplicate was found, 0 otherwise
  */
 static int checkNoDuplicate()
 {
-    tryCreateFile(F_FILE_PATH);
-    FILE *file = fopen(F_FILE_PATH, "r");
+    FILE *file = secureFopen(F_LIST_PATH, "a");
+    fclose(file);
+    file = secureFopen(F_LIST_PATH, "r");
+
     char newHash[65] = {0};
     char readHash[65] = {0};
     char line[MAX_LINE_LEN] = {0};
-
-    if (file == NULL)
-    {
-        fprintf(stderr, "Could not open file! Exiting...\n");
-        eraseParams();
-        exit(EXIT_FAILURE);
-    }
 
     snprintf(line, MAX_LINE_LEN, "%s %s %s %u", account, domain, version, pwdLen);
     hashSHA256Hex(line, strlen(line), newHash, 65);
@@ -86,24 +81,17 @@ static int checkNoDuplicate()
 }
 
 /**
- * Inserts the new account into F_FILE_PATH, keeping an alphabetical order.
+ * Inserts the new account into F_LIST_PATH, keeping an alphabetical order.
  */
 static void insertAccount()
 {
-    tryCreateFile(F_FILE_PATH_TMP);
-    FILE *file = fopen(F_FILE_PATH, "r");
-    FILE *fileTmp = fopen(F_FILE_PATH_TMP, "w");
+    FILE *file = secureFopen(F_LIST_PATH, "r");
+    FILE *fileTmp = secureFopen(F_LIST_TMP_PATH, "w");
+
     char newLine[MAX_LINE_LEN] = {0};
     char readLine[MAX_LINE_LEN] = {0};
     char newHash[65] = {0};
     int notInserted = 1;
-
-    if (file == NULL || fileTmp == NULL)
-    {
-        fprintf(stderr, "Could not open file! Exiting...\n");
-        eraseParams();
-        exit(EXIT_FAILURE);
-    }
 
     snprintf(newLine + 65, MAX_LINE_LEN - 65, "%s %s %s %u", account, domain,
         version, pwdLen);
@@ -112,7 +100,7 @@ static void insertAccount()
     newLine[64] = ' ';
     strncat(newLine, "\n", 1);
 
-    /* Write new account list in F_FILE_PATH_TMP */
+    /* Write new account list in F_LIST_TMP_PATH */
     while (fgets(readLine, MAX_LINE_LEN, file) != NULL)
     {
         if (notInserted && STRNCMP(newLine + 65, <, readLine + 65, MAX_LINE_LEN - 65))
@@ -132,10 +120,10 @@ static void insertAccount()
 
     fclose(file);
     fclose(fileTmp);
-    file = fopen(F_FILE_PATH, "w");
-    fileTmp = fopen(F_FILE_PATH_TMP, "r");
+    file = secureFopen(F_LIST_PATH, "w");
+    fileTmp = secureFopen(F_LIST_TMP_PATH, "r");
 
-    /* Copy new list over to F_FILE_PATH */
+    /* Copy new list over to F_LIST_PATH */
     while (fgets(readLine, MAX_LINE_LEN, fileTmp) != NULL)
     {
         fprintf(file, "%s", readLine);
@@ -149,7 +137,7 @@ static void insertAccount()
 }
 
 /**
- * Reads a specific line of F_FILE_PATH, stores the read parameters globally,
+ * Reads a specific line of F_LIST_PATH, stores the read parameters globally,
  * and returns its success.
  *
  * @param lineNum number of to-be-read line (first line = 0)
@@ -157,18 +145,9 @@ static void insertAccount()
  */
 int loadAccountLine(long lineNum)
 {
-    FILE *file = fopen(F_FILE_PATH, "r");
+    FILE *file = secureFopen(F_LIST_PATH, "r");
     char hash[65];
     int ch;
-
-    if (file == NULL)
-    {
-        fprintf(stderr, "Could not open "F_FILE_PATH"! Exiting...\n"
-            "Try adding a new account to create the file or check the file"
-            " permissions.\n");
-        eraseParams();
-        exit(EXIT_FAILURE);
-    }
 
     /* Move to the beginning of the desired line */
     for (long i = 0; i < lineNum; i++)
@@ -187,6 +166,46 @@ int loadAccountLine(long lineNum)
     {
         fclose(file);
         return 0;
+    }
+
+    fclose(file);
+    return 1;
+}
+
+/**
+ * Creates or truncates F_CACHE_PATH to zero length and then writes the
+ * contents of `cache' to the file.
+ */
+void saveCache()
+{
+    FILE *file = secureFopen(F_CACHE_PATH, "w");
+
+    for (int i = 0; i < 32; i++)
+    {
+        fprintf(file, "%"SCNu8"\n", cache[i]);
+    }
+
+    fclose(file);
+}
+
+/**
+ * Stores the contents of F_CACHE_PATH globally in `cache' if the file exists.
+ *
+ * @return 1 on success, 0 otherwise
+ */
+int tryLoadCache()
+{
+    FILE *file = fopen(F_CACHE_PATH, "r");
+
+    if (file == NULL)
+    {
+        fclose(file);
+        return 0;
+    }
+
+    for (int i = 0; i < 32; i++)
+    {
+        fscanf(file, "%"SCNu8, cache + i);
     }
 
     fclose(file);

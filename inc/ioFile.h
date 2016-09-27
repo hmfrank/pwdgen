@@ -4,8 +4,12 @@
 /* Prevent interpositioning */
 #define saveAccount() pwdgenSaveAccount()
 #define loadAccountLine(a) pwdgenLoadAccountLine(a)
+#define saveCache() pwdgenSaveCache()
+#define tryLoadCache() pwdgenTryLoadCache()
 
 void saveAccount();
 int loadAccountLine(long lineNum);
+void saveCache();
+int tryLoadCache();
 
 #endif

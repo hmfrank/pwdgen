@@ -5,6 +5,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <generator.h>
 #include <globals.h>
 #include <ioCLI.h>
 #include <ioFile.h>
@@ -14,6 +15,7 @@
 static void askForNewAccount();
 static void askForSavedAccount();
 static void askForMasterPwd();
+static inline void guidedCacheGen();
 static void readStr(char * const dest, size_t len, char const *text);
 static void readLong(long * const dest, size_t len, long min, long max, char const *text);
 static inline int invalidNatNum(char const *str);
@@ -27,22 +29,20 @@ static char readChNoEcho();
 void getInput()
 {
     char buffer[3] = {0};
-
     printf("== Deterministic Password Generator (V3) ==\n"
-        "Do you wish to add a new account to your list or load an existing one?\n\n"
-        "Selection   Name\n"
-        "------------------------------------\n"
-        "    0       Create new account\n"
-        "*   1       Load existing account\n\n");
-
+        "Please select one of the options below:\n");
     do
     {
-        size_t index;
+        printf("\nSelection   Name\n"
+            "------------------------------------\n"
+            "    0       Create new account\n"
+            "*   1       Load existing account\n"
+            "    2       Generate new cache\n\n"
+            "Enter a number, or press ENTER to choose the default [*]: ");
 
         memset(buffer, 0, 3);
-        printf("Enter a number, or press ENTER to choose the default [*]: ");
         fgets(buffer, 3, stdin);
-        index = strcspn(buffer, "\n");
+        size_t index = strcspn(buffer, "\n");
 
         /* Remove trailing '\n' */
         if (index < strlen(buffer))
@@ -70,11 +70,26 @@ void getInput()
             askForSavedAccount();
             break;
         }
+        else if (buffer[0] == '2')
+        {
+            printf("\n");
+            guidedCacheGen();
+            continue;
+        }
     }
     while (1);
 
-    printf("\n");
-    askForMasterPwd();
+    if (!tryLoadCache())
+    {
+        printf("\nYou need to generate a cache before the first use of a"
+            " master password.\n");
+        guidedCacheGen();
+    }
+    else
+    {
+        printf("\n");
+        askForMasterPwd();
+    }
 }
 
 /**
@@ -116,7 +131,7 @@ static void askForSavedAccount()
 
     long i = 0;
 
-    printf("\n== Your account list ("F_FILE_PATH") ==\n"
+    printf("== Your account list ("F_LIST_PATH") ==\n"
         "Selection   Account Domain Version Length\n"
         "-------------------------------------------\n");
 
@@ -140,6 +155,7 @@ static void askForMasterPwd()
     char const kBackspace = 127;
     char ch;
 
+    memset(masterPwd, 0, 257);
     printf("Master password: ");
 
     while ((ch = readChNoEcho()) != kEnter)
@@ -167,6 +183,18 @@ static void askForMasterPwd()
             masterPwd[len + 1] = '\0';
         }
     }
+}
+
+/**
+ * Guides the user through the cache generation.
+ */
+static inline void guidedCacheGen()
+{
+    askForMasterPwd();
+    printf("\nGenerating cache... This will take ~1-2 min.\n");
+    generateCache();
+    saveCache();
+    printf("Cache was generated.\n");
 }
 
 /**
@@ -330,6 +358,12 @@ void getInput(int argc, char *argv[])
     memset(argv[3], 0, 17);
     memset(argv[4], 0, 257);
     memset(argv[5], 0, 257);
+
+    if (!tryLoadCache())
+    {
+        generateCache();
+        saveCache();
+    }
 }
 
 /**

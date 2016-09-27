@@ -69,7 +69,26 @@ static int validatePwd(char *password)
 }
 
 /**
- * Generates a password from the input parameters and the master password,
+ * Generates a costly scrypt digest from the master password and stores it
+ * globally in `cache'. The generation should take ~1-2 minutes.
+ */
+void generateCache()
+{
+    uint8_t hashedMPwd[32] = {0};
+    hashSHA256((uint8_t *) masterPwd, strlen(masterPwd), hashedMPwd, 32);
+
+    for (int i = 0; i < 10; i++)
+    {
+        libscrypt_scrypt(hashedMPwd, 32, NULL, 0, pow(2, 22), 8, 1, cache, 32);
+        /* TODO: Handle scrypt errors */
+        hashSHA256(cache, 32, hashedMPwd, 32);
+    }
+
+    memset(hashedMPwd, 0, 32);
+}
+
+/**
+ * Generates a password from the input parameters and the master password
  * and stores it in the global variable `password'.
  */
 /* TODO: Add more detailed description */
@@ -78,7 +97,7 @@ void generatePwd()
     uint8_t hashedMPwd[32] = {0};
     uint8_t hashedInput[32] = {0};
     uint8_t digest[194] = {0};
-    char buffer[MAX_INPUT_LEN] = {0};
+    char buffer[MAX_INPUT_LEN + 32] = {0};
 
     /* Program will end up in infinite loop otherwise */
     /* If this occurs, some terrible mistake has happend */
@@ -86,7 +105,14 @@ void generatePwd()
 
     hashSHA256((uint8_t *) masterPwd, strlen(masterPwd), hashedMPwd, 32);
     bundleInput(buffer, MAX_INPUT_LEN);
-    hashSHA256((uint8_t *) buffer, strlen(buffer), hashedInput, 32);
+    size_t inputLen = strlen(buffer);
+
+    for (int i = 0; i < 32; i++)
+    {
+        buffer[inputLen++] = cache[i];
+    }
+
+    hashSHA256((uint8_t *) buffer, inputLen, hashedInput, 32);
 
     if (debug)
     {
@@ -96,8 +122,8 @@ void generatePwd()
     do
     {
         /* password, len, salt, len, cost, block size, parallelisation, digest, len */
-        /* TODO: Test for errors */
         libscrypt_scrypt(hashedMPwd, 32, hashedInput, 32, pow(2, 17), 8, 1, digest, 194);
+        /* TODO: Handle scrypt errors */
         encodeBase64(digest, 192, buffer, 192 / 3 * 4 + 1);
         strncpy(password, buffer, pwdLen - 2);
 
@@ -129,5 +155,5 @@ void generatePwd()
     memset(hashedMPwd, 0, 32);
     memset(hashedInput, 0, 32);
     memset(digest, 0, 194);
-    memset(buffer, 0, MAX_INPUT_LEN);
+    memset(buffer, 0, MAX_INPUT_LEN + 32);
 }

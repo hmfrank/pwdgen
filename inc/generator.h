@@ -4,8 +4,10 @@
 #include <stddef.h>
 
 /* Prevent interpositioning */
+#define generateCache() pwdgenGenerateCache()
 #define generatePwd() pwdgenGeneratePwd()
 
+void generateCache();
 void generatePwd();
 
 #endif
