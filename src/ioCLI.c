@@ -190,11 +190,16 @@ static void askForMasterPwd()
  */
 static inline void guidedCacheGen()
 {
+    printf("Generation will take ~1-2 min, depending on your"
+        " machine's performance.\nIt is not recommended for computers with less"
+        " than 3GB of RAM!\n");
+
     askForMasterPwd();
-    printf("\nGenerating cache... This will take ~1-2 min.\n");
-    generateCache();
+    printf("\nGenerating cache...\n");
+    int takenSecs = generateCache();
     saveCache();
-    printf("Cache was generated.\n");
+    printf("Cache was generated. (Taken time: %d min %d s)\n", takenSecs / 60,
+        takenSecs % 60);
 }
 
 /**

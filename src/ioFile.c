@@ -23,6 +23,7 @@ void saveAccount()
         insertAccount();
     }
 }
+
 /**
  * A wrapper for fopen() that also checks if the returned pointer is NULL.
  * XXX: Caller must free allocated memory.
@@ -199,7 +200,6 @@ int tryLoadCache()
 
     if (file == NULL)
     {
-        fclose(file);
         return 0;
     }
 

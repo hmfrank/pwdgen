@@ -7,7 +7,7 @@
 #define generateCache() pwdgenGenerateCache()
 #define generatePwd() pwdgenGeneratePwd()
 
-void generateCache();
+int generateCache();
 void generatePwd();
 
 #endif

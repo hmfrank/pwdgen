@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <generator.h>
 #include <globals.h>
@@ -71,20 +72,25 @@ static int validatePwd(char *password)
 /**
  * Generates a costly scrypt digest from the master password and stores it
  * globally in `cache'. The generation should take ~1-2 minutes.
+ *
+ * @return taken time in seconds
  */
-void generateCache()
+int generateCache()
 {
     uint8_t hashedMPwd[32] = {0};
+    clock_t begin = clock();
+
     hashSHA256((uint8_t *) masterPwd, strlen(masterPwd), hashedMPwd, 32);
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 12; i++)
     {
-        libscrypt_scrypt(hashedMPwd, 32, NULL, 0, pow(2, 22), 8, 1, cache, 32);
+        libscrypt_scrypt(hashedMPwd, 32, NULL, 0, pow(2, 21), 8, 1, cache, 32);
         /* TODO: Handle scrypt errors */
         hashSHA256(cache, 32, hashedMPwd, 32);
     }
 
     memset(hashedMPwd, 0, 32);
+    return (int) (clock() - begin) / CLOCKS_PER_SEC;
 }
 
 /**
