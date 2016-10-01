@@ -135,6 +135,11 @@ static void insertAccount()
     memset(newLine, 0, MAX_LINE_LEN);
     memset(readLine, 0, MAX_LINE_LEN);
     printf("\nAdded new account to your list.\n");
+
+    if (remove(F_LIST_TMP_PATH) != 0)
+    {
+        fprintf(stderr, "Warning: Failed to delete "F_LIST_TMP_PATH"!\n");
+    }
 }
 
 /**

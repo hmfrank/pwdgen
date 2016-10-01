@@ -1,6 +1,6 @@
 # Deterministic Password Generator
 
-Pwdgen is a lightweight, deterministic password generator written in C that
+Pwdgen is a lightweight, deterministic password generator, written in C, that
 strives to offer a swift and convenient, but still secure experience for the
 users. It will be available for GNU/Linux and Windows in CLI form.
 
@@ -18,7 +18,7 @@ pwdgen tackles them.
 * Hash multiple times if bad passwords are generated (1)
 * Extract a number and a special character from the digest and include them in the password (1)
 * Use scrypt for slower hashing (2)
-* Generate a really strong digest (~1 min of generation), store it locally, and then use that for every normal generation (2)
+* Generate a really strong digest (~1-2 min of generation), store it locally, and then use that for every normal generation (2)
 * Make generations quicker with a locally saved account list (3)
 * Include a version parameter in the generation (4)
 
@@ -26,6 +26,7 @@ pwdgen tackles them.
 ```
 cd path/of/your/choice
 git clone https://github.com/chlewe/pwdgen.git
+cd pwdgen
 make (for a normal executable)
 make script (for a script-fit executable)
 ```
@@ -45,7 +46,7 @@ Then simply follow the instructions on the screen.
 
 ## Disclaimer
 I cannot guarantee the security of this application, I am not a professional. Use it at your own risk.
-I am open to criticism, however, so if you spot a problem, please feel free to notify me straight away.
+I am open to criticism, however. So if you spot a problem, please feel free to notify me straight away.
 
 
 ## TODO
