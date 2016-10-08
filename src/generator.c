@@ -122,7 +122,7 @@ void generatePwd()
 
     if (debug)
     {
-        printf("\nInput: `%s\'\n", buffer);
+        printf("\nInput: `%.*s\' + Cache\n", (int) inputLen - 32, buffer);
     }
 
     do

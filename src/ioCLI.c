@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef __WIN32__
 #include <termios.h>
+#endif
+
 #include <unistd.h>
 
 #include <generator.h>
@@ -324,6 +328,7 @@ static void flush()
  * @return read character
  */
 static char readChNoEcho()
+#ifndef __WIN32__
 {
     char ch;
     struct termios t_old, t_new;
@@ -338,6 +343,13 @@ static char readChNoEcho()
     tcsetattr(STDIN_FILENO, TCSANOW, &t_old);
     return ch;
 }
+#else
+{
+    char ch = getchar();
+    printf("\b \b");
+    return ch;
+}
+#endif
 
 #else
 

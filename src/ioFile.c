@@ -188,7 +188,7 @@ void saveCache()
 
     for (int i = 0; i < 32; i++)
     {
-        fprintf(file, "%"SCNu8"\n", cache[i]);
+        fprintf(file, "%u\n", (unsigned) cache[i]);
     }
 
     fclose(file);
@@ -202,6 +202,7 @@ void saveCache()
 int tryLoadCache()
 {
     FILE *file = fopen(F_CACHE_PATH, "r");
+    unsigned cacheTmp;
 
     if (file == NULL)
     {
@@ -210,7 +211,8 @@ int tryLoadCache()
 
     for (int i = 0; i < 32; i++)
     {
-        fscanf(file, "%"SCNu8, cache + i);
+        fscanf(file, "%3u", &cacheTmp);
+        cache[i] = (uint8_t) cacheTmp;
     }
 
     fclose(file);
