@@ -19,28 +19,26 @@
 
 /* Global input parameters */
 /* Points to master password */
-extern char *masterPwd;
+extern char masterPwd[];
 /* Points to account name */
-extern char *account;
+extern char account[];
 /* Points to domain name */
-extern char *domain;
+extern char domain[];
 /* Points to version */
-extern char *version;
+extern char version[];
 /* Points to cache (generated from master password in costly manner) */
-extern uint8_t *cache;
+extern uint8_t cache[];
 /* Length of generated password */
 extern unsigned pwdLen;
 
 /* Points to string representation of generated password */
-extern char *password;
+extern char password[];
 /* Toggles debug features of the program */
 extern int debug;
 
 /* Prevent interpositioning */
-#define initParams() pwdgenInitParams()
 #define eraseParams() pwdgenEraseParams()
 
-void initParams();
 void eraseParams();
 
 #endif

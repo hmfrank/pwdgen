@@ -4,42 +4,17 @@
 
 #include <globals.h>
 
-char *masterPwd;
-char *account;
-char *domain;
-char *version;
-char *password;
-uint8_t *cache;
+char masterPwd[257];
+char account[257];
+char domain[257];
+char version[17];
+char password[257];
+uint8_t cache[32];
 unsigned pwdLen;
 int debug;
 
 /**
- * Allocates the global input parameters and zeroises them.
- * XXX: Caller must free allocated memory.
- */
-void initParams()
-{
-    masterPwd = calloc(257, sizeof *masterPwd);
-    account = calloc(257, sizeof *account);
-    domain = calloc(257, sizeof *domain);
-    version = calloc(17, sizeof *version);
-    password = calloc(257, sizeof *password);
-    cache = calloc(32, sizeof *cache);
-
-    if (masterPwd == NULL || account == NULL || domain == NULL ||
-        version == NULL || password == NULL || cache == NULL)
-    {
-        fprintf(stderr, "Allocation error! Exiting...\n");
-        exit(EXIT_FAILURE);
-    }
-
-    pwdLen = 0;
-    debug = 0;
-}
-
-/**
- * Zeroises and deallocates the global input parameters,
- * as well as makes them point to NULL.
+ * Zeroises the global input parameters.
  */
 void eraseParams()
 {
@@ -50,18 +25,6 @@ void eraseParams()
     memset(password, 0, 257);
     memset(cache, 0, 32);
 
-    free(masterPwd);
-    free(account);
-    free(domain);
-    free(version);
-    free(password);
-    free(cache);
-
-    masterPwd = NULL;
-    account = NULL;
-    domain = NULL;
-    version = NULL;
-    password = NULL;
-    cache = NULL;
     pwdLen = 0;
+    debug = 0;
 }

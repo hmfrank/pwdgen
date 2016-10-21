@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-    initParams();
+    eraseParams();
 
 #ifndef USE_ARGV_ONLY
     if (argc >= 2 && STRCMP(argv[1], ==, "-d"))
