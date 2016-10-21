@@ -313,7 +313,7 @@ static inline int invalidNatNum(char const *kStr)
  */
 static void flush()
 {
-    char ch;
+    int ch;
 
     do
     {
